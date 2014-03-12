@@ -35,7 +35,7 @@ Usage
 -----
 
 The usage is nearly similar to that of the java library:
-- Include all the files in the path or use an autoloader such as [AutoloadByNamespace](https://github.com/bggardner/AutoloadByNamespace).
+- Include all the files in the path or use an autoloader such as [AutoloadByNamespace-php](https://github.com/bggardner/AutoloadByNamespace-php).
 - For usage with Google Charts:
     - Create a class that extends the DataSource class
     - Instantiate the class in a file that accepts the HTTP GET request ('tq' and 'tqx' parameters) from the Google Chart
