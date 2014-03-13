@@ -6,6 +6,7 @@
   use NumberFormatter;
   use Google\Visualization\DataSource\Base\BooleanFormat;
   use Google\Visualization\DataSource\Base\TextFormat;
+  use Google\Visualization\DataSource\Base\LocaleUtil;
   use Google\Visualization\DataSource\DataTable\Value\Value;
   use Google\Visualization\DataSource\DataTable\Value\ValueType;
   use Google\Visualization\DataSource\Util\Map;

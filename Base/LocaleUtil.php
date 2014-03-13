@@ -7,7 +7,7 @@
   {
     const LOCALE_PATTERN = "/(^[^_-]*)(?:[_-]([^_-]*)(?:[_-]([^_-]*))?)?/";
 
-    protected static $defaultLocale = Locale::US;
+    protected static $defaultLocale;
 
     public static function setDefaultLocale($defaultLocale)
     {
@@ -16,6 +16,10 @@
 
     public static function getDefaultLocale()
     {
+      if (!isset($defaultLocale))
+      {
+        self::$defaultLocale = Locale::getDefault();
+      }
       return self::$defaultLocale;
     }
 

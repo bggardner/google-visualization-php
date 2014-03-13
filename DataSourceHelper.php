@@ -14,6 +14,7 @@
   use Google\Visualization\DataSource\Query\Query;
   use Google\Visualization\DataSource\Query\Engine\QueryEngine;
   use Google\Visualization\DataSource\Query\Parser\QueryBuilder;
+  use Google\Visualization\DataSource\Render\CsvRenderer;
   use Google\Visualization\DataSource\Render\HtmlRenderer;
   use Google\Visualization\DataSource\Render\JsonRenderer;
 
