@@ -23,7 +23,7 @@
 
     public static function getModifiedResponseStatus(ResponseStatus $responseStatus)
     {
-      $signInString = LocaleUtil::getLocalizedMessageFromBundle("Google\Visualization\DataSource\Base\ErrorMessages", self::SIGN_IN_MESSAGE_KEY, NULL);
+      $signInString = LocaleUtil::getLocalizedMessageFromBundle(__NAMESPACE__ . "\ErrorMessages", self::SIGN_IN_MESSAGE_KEY, NULL);
       if ($responseStatus->getReasonType() == ReasonType::USER_NOT_AUTHENTICATED)
       {
         $msg = $responseStatus->getDescription();

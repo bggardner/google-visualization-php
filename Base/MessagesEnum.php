@@ -9,7 +9,7 @@
     public static function getMessageWithArgs($type, $locale)
     {
       $args = array_slice(func_get_args(), 2);
-      return LocaleUtil::getLocalizedMessageFromBundleWithArguments(__NAMESPACE__."\ErrorMessages", $type, $args, $locale);
+      return LocaleUtil::getLocalizedMessageFromBundleWithArguments(__NAMESPACE__ . "\ErrorMessages", $type, $args, $locale);
     }
   }
 ?>

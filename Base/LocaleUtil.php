@@ -2,6 +2,7 @@
   namespace Google\Visualization\DataSource\Base;
 
   use Locale;
+  use ResourceBundle;
 
   class LocaleUtil
   {
@@ -25,8 +26,9 @@
 
     public static function getLocalizedMessageFromBundle($bundleName, $key, $locale)
     {
-      $bundle = new $bundleName();
-      return $bundle->getString($key, $locale);
+      $bundleName = str_replace("\\", "/", $bundleName);
+      $bundleName = substr(__DIR__, 0, strpos(__DIR__, str_replace("\\", "/", __NAMESPACE__))) . "/" . $bundleName;
+      return ResourceBundle::create($locale, $bundleName, TRUE)->get($key);
     }
 
     public static function getLocalizedMessageFromBundleWithArguments($bundleName, $key, $args, $locale)
