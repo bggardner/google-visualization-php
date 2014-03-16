@@ -1,6 +1,9 @@
 <?php
   namespace Google\Visualization\Datasource\Query;
 
+  use Google\Visualization\DataSource\DataTable\DataTable;
+  use Google\Visualization\DataSource\DataTable\TableRow;
+
   class NegationFilter extends QueryFilter
   {
     protected $subFilter;
@@ -38,6 +41,30 @@
     public function toQueryString()
     {
       return "NOT (" . $this->subFilter->toQueryString() . ")";
+    }
+
+    public function equals($o)
+    {
+      if ($this == $o)
+      {
+        return TRUE;
+      }
+      if (is_null($o))
+      {
+        return FALSE;
+      }
+      if (get_class($this) != get_class($o))
+      {
+        return FALSE;
+      }
+      if (is_null($this->subFilter))
+      {
+        if (!is_null($o->subFilter))
+        {
+          return FALSE;
+        }
+        return TRUE;
+      }
     }
   }
 ?>

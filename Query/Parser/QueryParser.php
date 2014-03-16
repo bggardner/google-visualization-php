@@ -45,12 +45,15 @@
   use Google\Visualization\DataSource\Query\ScalarFunction\ToDate;
   use Google\Visualization\DataSource\Query\ScalarFunction\Upper;
 
+  // TODO: Create ICU supported error messages
+
   class QueryParser
   {
-    const VALUE_PATTERN = "/^(?:\(?(\"[^\"]*\")|('[^']*')|(-?[0-9]*\.?[0-9]+)|(true|false)|((?:date|timeofday|datetime)\s+(?:(?:\"[^\"]*\")|(?:'[^']*')))\)?)$/i";
     const DATE_FORMAT = "[0-9]{4}-[0-9]{2}-[0-9]{2}";
-    const TIME_FORMAT = "[0-9]{2}:[0-9]{2}:[0-9]{2}(?:.[0-9]{0-3})?";
     const NOT_BACK_QUOTED = "(?:[^`]*`[^`]*`)*[^`]$";
+    const SCALAR_FUNCTIONS_REGEXP = "/(year)|(month)|(day)|(hour)|(minute)|(second)|(millisecond)|(quarter)|(dayOfWeek)|(now)|(dateDiff)|(toDate)|(upper)|(lower)$/i";
+    const TIME_FORMAT = "[0-9]{2}:[0-9]{2}:[0-9]{2}(?:.[0-9]{0-3})?";
+    const VALUE_PATTERN = "/^(?:\(?(\"[^\"]*\")|('[^']*')|(-?[0-9]*\.?[0-9]+)|(true|false)|((?:date|timeofday|datetime)\s+(?:(?:\"[^\"]*\")|(?:'[^']*')))\)?)$/i";
 
     protected static $clauseSeparators = array(
       "select",
@@ -108,20 +111,34 @@
     {
       $orSubFilters = array();
       $orArgs = self::splitFilter($argumentString, CompoundFilter::LOGICAL_OPERATOR_OR);
-      foreach ($orArgs as $orArg)
+      foreach ($orArgs as $i => $orArg)
       {
-        if ($orArg instanceOf QueryFilter)
+        if ($orArg instanceof QueryFilter)
         {
           $orSubFilters[] = $orArg;
           continue;
         }
+        if (trim(($orArg = preg_replace("/(^\{\d+\})|(\{\d+\}$)/", "", trim($orArg), 1))) == "")
+        {
+          continue;
+        }
         $andSubFilters = array();
         $andArgs = self::splitFilter($orArg, CompoundFilter::LOGICAL_OPERATOR_AND);
-        foreach ($andArgs as $i => $andArg)
+        if (count($andArgs) == 1 && $andArgs[0] == $orArg)
+        {
+          $orSubFilters[] = self::parseNonCompoundFilter($orArg);
+          continue;
+        }
+        foreach ($andArgs as $j => $andArg)
         {
           if ($andArg instanceof QueryFilter)
           {
             $andSubFilters[] = $andArg;
+            continue;
+          }
+          if (trim($andArg = preg_replace("/(^\{\d+\})|(\{\d+\}$)/", "", trim($andArg))) == "")
+          {
+            $andSubFilters[] = array_pop($orSubFilters);
             continue;
           }
           if (($notPos = stripos($andArg, "not ")) !== FALSE)
@@ -135,7 +152,7 @@
         if (count($andSubFilters) == 1)
         {
           $orSubFilters[] = $andSubFilters[0];
-        } else if (count($andSubFilters))
+        } else if (count($andSubFilters) > 0)
         {
           $orSubFilters[] = new CompoundFilter(CompoundFilter::LOGICAL_OPERATOR_AND, $andSubFilters);
         }
@@ -143,7 +160,7 @@
       if (count($orSubFilters) == 1)
       {
         $filter = $orSubFilters[0];
-      } else if (count($orSubFilters))
+      } else if (count($orSubFilters) > 0)
       {
         $filter = new CompoundFilter(CompoundFilter::LOGICAL_OPERATOR_OR, $orSubFilters);
       }
@@ -178,7 +195,7 @@
         }
       } else
       {
-        throw new InvalidQueryException("Query parse error: Encountered " . $filterString);
+        throw new InvalidQueryException("Encountered unknown filter [" . $filterString . "]");
       }
       return $filter;
     }
@@ -211,7 +228,7 @@
         $value = new DateTimeValue($matches[1]);
       } else
       {
-        throw new InvalidQueryException("Query parse error: Encountered '" . $valueString . "'");
+        throw new InvalidQueryException("Encountered unknown value [" . $valueString . "]");
       }
       return $value;
     }
@@ -222,24 +239,29 @@
       $innerExp = "";
       $outerExp = "";
       $parensCount = 0;
+      $sfCount = 0;
       $negate = FALSE;
       for ($i = 0; $i < strlen($filterString); $i++)
       {
         $c = substr($filterString, $i, 1);
-        if ($c == "(")
+        if ($c == "(" && preg_match(self::SCALAR_FUNCTIONS_REGEXP, $innerExp))
+        {
+          $sfCount++;
+        }
+        if ($c == "(" && $sfCount == 0)
         {
           $parensCount++;
           if ($parensCount == 1)
           {
-            if (($notPos = stripos($outerExp, "not ")) !== FALSE) // TODO: test this for not start of string
+            if (($notPos = stripos($outerExp, "not ")) !== FALSE)
             {
               $negate = TRUE;
-              $outerExp = substr($outerExp, 0, $notPos);
+              $outerExp = substr_replace($outerExp, "", $notPos, 4);
             }
             $innerExp = "";
             continue;
           }
-        } else if ($c == ")")
+        } else if ($c == ")" && $sfCount == 0)
         {
           $parensCount--;
           if ($parensCount == 0)
@@ -254,10 +276,8 @@
               $filter = new NegationFilter($filter);
               $negate = FALSE;
             }
-            if ($filter instanceof CompoundFilter)
-            {
-              $a[] = $filter;
-            }
+            $outerExp .= "{" . count($a) . "}";
+            $a[] = $filter;
             $innerExp = "";
             continue;
           }
@@ -265,7 +285,15 @@
         {
           $outerExp .= $c;
         }
+        if ($c == ")" && $sfCount > 0)
+        {
+          $sfCount--;
+        }
         $innerExp .= $c;
+      }
+      if ($parensCount != 0 || $sfCount != 0)
+      {
+        throw new InvalidQueryException("Unmatched parenthesis in WHERE clause");
       }
       $pattern = "/\s" . $separator . "\s/i";
       $a = array_merge($a, preg_split($pattern, $outerExp, -1, PREG_SPLIT_NO_EMPTY));
@@ -388,17 +416,14 @@
         $clauseSeparator = self::$clauseSeparators[$i];
         $clause = NULL;
         if (preg_match("/(?:^\s*(" . $clauseSeparator . ")\s+)|(?:\s+(" . $clauseSeparator . ")\s+(?:[^`]*`[^`]*`)*[^`]*$)/i", $queryString, $matches, PREG_OFFSET_CAPTURE))
-//        if (($clausePos = stripos($queryString, $clauseSeparator)) !== FALSE)
         {
           $matches = end($matches);
           $clausePos = $matches[1] + strlen($clauseSeparator);
-//          $clausePos += strlen($clauseSeparator);
           unset($nextClauseSeparatorPos);
           for ($j = $i + 1; $j < count(self::$clauseSeparators); $j++)
           {
             $nextClauseSeparator = self::$clauseSeparators[$j];
             if (preg_match("/(?:^\s*(" . $nextClauseSeparator . ")\s+)|(?:\s+(" . $nextClauseSeparator . ")\s+(?:[^`]*`[^`]*`)*[^`]*$)/i", $queryString, $matches, PREG_OFFSET_CAPTURE))
-//            if (($nextClauseSeparatorPos = stripos($queryString, $nextClauseSeparator, $clausePos)) !== FALSE)
             {
               $matches = end($matches);
               $nextClauseSeparatorPos = $matches[1];
@@ -544,6 +569,10 @@
         {
           throw new InvalidQueryException("Nested back quotes are not allowed");
         }
+        if ($matches[1] == "")
+        {
+          throw new InvalidQueryException("Column name is required.");
+        }
         $column = new SimpleColumn($matches[1]);
       } else if (preg_match("/[^,]\s*[\+\-\*\/%]/", $arg)) // Arithmetic expression
       {
@@ -562,6 +591,10 @@
         $column = new ScalarFunctionColumn(array(), new Constant(self::parseValue($matches[1])));
       } else if (($parenPos = strpos($arg, "(")) === FALSE) // Not a function
       {
+        if ($arg == "")
+        {
+          throw new InvalidQueryException("Column name is required.");
+        }
         $column = new SimpleColumn($arg);
       } else // Aggregation or Scalar Function
       {
@@ -576,6 +609,10 @@
             throw new InvalidQueryException("Aggregation functions can only contain one column");
           }
           $aggregatedColumn = preg_replace("/\s*`?([^`]+)`?\s*/", "$1", $colFuncArgs[0]);
+          if ($aggregatedColumn == "")
+          {
+            throw new InvalidQueryException("The " . $colFunc . "() requires one argument.");
+          }
           $column = new AggregationColumn(new SimpleColumn($aggregatedColumn), constant($aggTypeString));
         } else // Scalar Function
         {

@@ -1,6 +1,7 @@
 <?php
   namespace Google\Visualization\DataSource;
 
+  use Google\Visualization\DataSource\Base\DataSourceException;
   use Google\Visualization\DataSource\Base\DataSourceParameters;
   use Google\Visualization\DataSource\Base\InvalidQueryException;
   use Google\Visualization\DataSource\Base\OutputType;
@@ -35,11 +36,11 @@
       try
       {
         $dataSourceRequest->createDataSourceParametersFromRequest();
-      } catch (DataSourcException $e)
+      } catch (DataSourceException $e)
       {
         if (is_null($dataSourceRequest->dsParams))
         {
-          $dataSourceRequest->dsParams = DataSourceParamaters::getDefaultDataSourceParameters();
+          $dataSourceRequest->dsParams = DataSourceParameters::getDefaultDataSourceParameters();
         }
         if (($dataSourceRequest->dsParams->getOutputType() == OutputType::JSON) && (!$dataSourceRequest->sameOrigin))
         {
@@ -64,7 +65,7 @@
         $headers = array_keys(getallheaders());
         foreach ($headers as $header)
         {
-          if (strtolower($header) == strtolower(self::SAME_ORIGIN_HEADER))
+          if (strcasecmp($header, self::SAME_ORIGIN_HEADER) == 0)
           {
             $sameOrigin = TRUE;
             break;

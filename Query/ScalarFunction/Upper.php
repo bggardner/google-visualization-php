@@ -34,9 +34,9 @@
       }
     }
 
-    public function toQueryString($argumentsQueryString)
+    public function toQueryString($argumentsQueryStrings)
     {
-      return self::FUNCTION_NAME + "(" + $argumentsQueryStrings[0] + ")";
+      return self::FUNCTION_NAME . "(" . $argumentsQueryStrings[0] . ")";
     }
   }
 ?>

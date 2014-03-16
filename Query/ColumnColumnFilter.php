@@ -36,7 +36,7 @@
 
     public function getAggregationColumns()
     {
-      return array_merge($this->firstColumn->getAggregationColumns(), $this->secondColumn->getAggregationColumns());
+      return array_merge($this->firstColumn->getAllAggregationColumns(), $this->secondColumn->getAllAggregationColumns());
     }
 
     public function getFirstColumn()

@@ -44,11 +44,12 @@
       {
         if (is_null($dsRequest))
         {
-          $dsRequest = DataSourceRequest::getDefaultDatasourceRequest();
+          $dsRequest = DataSourceRequest::getDefaultDataSourceRequest();
         }
         $responseStatus = ResponseStatus::createResponseStatus($e);
         $responseStatus = ResponseStatus::getModifiedResponseStatus($responseStatus);
-        self::setResponse(self::generateErrorResponse($responseStatus, $dsRequest), $dsRequest);
+        $responseMessage = self::generateErrorResponse($responseStatus, $dsRequest);
+        self::setResponse($responseMessage, $dsRequest);
       } catch (RuntimeException $e)
       {
         //$log->error("A runtime exception has occurred", $e);

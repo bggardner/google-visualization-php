@@ -91,5 +91,24 @@
       }
       return $this->scalarFunction->getReturnType($types);
     }
+
+    public function equals($o)
+    {
+      if ($o instanceof ScalarFunctionColumn)
+      {
+        return $this->columns == $o->columns && $this->scalarFunction == $o->scalarFunction;
+      }
+      return FALSE;
+    }
+
+    public function toQueryString()
+    {
+      $columnQueryStrings = array();
+      foreach ($this->columns as $column)
+      {
+        $columnQueryStrings[] = $column->toQueryString();
+      }
+      return $this->scalarFunction->toQueryString($columnQueryStrings);
+    }
   }
 ?>

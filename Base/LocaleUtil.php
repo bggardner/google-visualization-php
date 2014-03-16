@@ -2,6 +2,7 @@
   namespace Google\Visualization\DataSource\Base;
 
   use Locale;
+  use MessageFormatter;
   use ResourceBundle;
 
   class LocaleUtil
@@ -34,9 +35,9 @@
     public static function getLocalizedMessageFromBundleWithArguments($bundleName, $key, $args, $locale)
     {
       $rawMessage = self::getLocalizedMessageFromBundle($bundleName, $key, $locale);
-      for ($i = 0; $i < count($args); $i++)
+      if (!is_null($args) && count($args))
       {
-        $rawMessage = preg_replace("/\{" . $i . "\}/", $args[$i], $rawMessage); // TODO: Avoid replacing escaped braces
+        return MessageFormatter::formatMessage($locale, $rawMessage, $args);
       }
       return $rawMessage;
     }

@@ -19,6 +19,24 @@
     protected $userFormatOptions;
     protected $localeForUserMessages;
 
+    protected function checkForDuplicates($selectionColumns, $clauseName)
+    {
+      for ($i = 0; $i < count($selectionColumns); $i++)
+      {
+        $col = $selectionColumns[$i];
+        for ($j = $i + 1; $j < count($selectionColumns); $j++)
+        {
+          if (($isCol = ($col instanceof AbstractColumn && $col->equals($selectionColumns[$j]))) || $col == $selectionColumns[$j])
+          {
+            $args = array($isCol ? $col->toString() : $col, $clauseName);
+            $messageToLogAndUser = MessagesEnum::getMessageWithArgs(MessagesEnum::COLUMN_ONLY_ONCE, $this->localeForUserMessages, $args);
+            //$log->error($messageToLogAndUser);
+            throw new InvalidQueryException($messageToLogAndUser);
+          }
+        }
+      }
+    }
+
     public function setSort(QuerySort $sort = NULL)
     {
       $this->sort = $sort;
@@ -224,7 +242,7 @@
         && !$this->hasUserFormatOptions() && !$this->hasLabels() && !$this->hasOptions();
     }
 
-    public function setUserLocaleForMessages($localeForUserMessages)
+    public function setLocaleForUserMessages($localeForUserMessages)
     {
       $this->localeForUserMessages = $localeForUserMessages;
     }
@@ -246,6 +264,98 @@
 
     public function validate()
     {
+      $groupColumnIds = $this->hasGroup() ? $this->group->getColumnIds() : array();
+      $groupColumns = $this->hasGroup() ? $this->group->getColumns() : array();
+      $pivotColumnIds = $this->hasPivot() ? $this->pivot->getColumnIds() : array();
+      $selectionColumns = $this->hasSelection() ? $this->selection->getColumns() : array();
+      $selectionAggregated = $this->hasSelection() ? $this->selection->getAggregationColumns() : array();
+      $selectionSimple = $this->hasSelection() ? $this->selection->getSimpleColumns() : array();
+      $selectedScalarFunctionColumns = $this->hasSelection() ? $this->selection->getScalarFunctionColumns() : array();
+      $sortColumns = $this->hasSort() ? $this->sort->getColumns() : array();
+      $sortAggregated = $this->hasSort() ? $this->sort->getAggregationColumns() : array();
+
+      // Check for duplicates
+      $this->checkForDuplicates($selectionColumns, "SELECT");
+      $this->checkForDuplicates($sortColumns, "ORDER BY");
+      $this->checkForDuplicates($groupColumnIds, "GROUP BY");
+      $this->checkForDuplicates($pivotColumnIds, "PIVOT");
+
+      // Cannot have aggregations in either group by, pviot, or where
+      if ($this->hasGroup())
+      {
+        foreach ($this->group->getColumns() as $column)
+        {
+          if (count($column->getAllAggregationColumns()))
+          {
+            $messageToLogAndUser = MessagesEnum::getMessageWithArgs(MessagesEnum::CANNOT_BE_IN_GROUP_BY, $this->localeForUserMessages, $column->toQueryString());
+            //$log->error($messageToLogAndUser);
+            throw new InvalidQueryException($messageToLogAndUser);
+          }
+        }
+      }
+      if ($this->hasPivot())
+      {
+        foreach ($this->pivot->getColumns() as $column)
+        {
+          if (count($column->getAllAggregationColumns()))
+          {
+            $messageToLogAndUser = MessagesEnum::getMessageWithArgs(MessagesEnum::CANNOT_BE_IN_PIVOT, $this->localeForUserMessages, $column->toQueryString());
+            //$log->error($messageToLogAndUser);
+            throw new InvalidQueryException($messageToLogAndUser);
+          }
+        }
+      }
+      if ($this->hasFilter())
+      {
+        $filterAggregations = $this->filter->getAggregationColumns();
+        if (count($filterAggregations))
+        {
+          $messageToLogAndUser = MessagesEnum::getMessageWithArgs(MessagesEnum::CANNOT_BE_IN_WHERE, $this->localeForUserMessages, $column->toQueryString());
+          //$log->error($messageToLogAndUser);
+          throw new InvalidQueryException($messageToLogAndUser);
+        }
+      }
+
+      // A column cannot appear both as an aggregation column and as a regular column in the selection
+      foreach ($selectionSimple as $column1)
+      {
+        $id = $column1->getColumnId();
+        {
+          foreach ($selectionAggregated as $column2)
+          {
+            if ($id == $column2->getAggregatedColumn()->getId())
+            {
+              $messageToLogAndUser = MessagesEnum::getMessageWithArgs(MessagesEnum::SELECT_WITH_AND_WITHOUT_AGG, $this->localeForUserMessages, $id);
+              //$log->error($messageToLogAndUser);
+              throw new InvalidQueryException($messageToLogAndUser);
+            }
+          }
+        }
+      }
+
+      // When aggregation is used, check that all selected columns are valid (either grouped-by or a scalar function with valid column arguments)
+      if (count($selectionAggregated))
+      {
+        foreach ($selectionColumns as $col)
+        {
+          $this->checkSelectedColumnWithGrouping($groupColumns, $col);
+        }
+      }
+
+      // Cannot group by a column that appears in an aggregation
+      if ($this->hasSelection() && $this->hasGroup())
+      {
+        foreach ($selectionAggregated as $column)
+        {
+          $id = $column->getAggregatedColumn()->getId();
+          if (in_array($id, $groupColumnIds))
+          {
+            $messageToLogAndUser = MessagesEnum::getMessageWithArgs(MessagesEnum::COL_AGG_NOT_IN_SELECT, $this->localeForUserMessages, $id);
+            //$log->error($messageToLogAndUser);
+            throw new InvalidQueryException($messageToLogAndUser);
+          }
+        }
+      }
       // TODO
     }
 
@@ -368,6 +478,29 @@
         $mentionedScalarFunctionsColumns = array_merge($mentionedScalarFunctionsColumns, $this->userFormatOptions->getScalarFunctionColumns());
       }
       return $mentionedScalarFunctionsColumns;
+    }
+
+    protected function checkSelectedColumnWithGrouping($groupColumns, AbstractColumn $col)
+    {
+      if ($col instanceof SimpleColumn)
+      {
+        if (!in_array($col, $groupColumns))
+        {
+          $messageToLogAndUser = MessagesEnum::getMessageWithArgs(MessagesEnum::ADD_COL_TO_GROUP_BY_OR_AGG, $this->localeForUserMessages, $col->getId());
+          //$log->error($messageToLogAndUser
+          throw new InvalidQueryException($messageToLogAndUser);
+        }
+      } else if ($col instanceof ScalarFunctionColumn)
+      {
+        if (!in_array($col, $groupColumns))
+        {
+          $innerColumns = $col->getColumns();
+          foreach ($innerColumns as $innerColumn)
+          {
+            $this->checkSelectedColumnWithGrouping($groupColumns, $innerColumn);
+          }
+        }
+      }
     }
 
     public static function columnListtoQueryString($l)

@@ -12,6 +12,11 @@
       $this->columnId = $columnId;
     }
 
+    public function getColumnId()
+    {
+      return $this->columnId;
+    }
+
     public function getId()
     {
       return $this->columnId;
@@ -26,6 +31,17 @@
     {
       return array($this->columnId);
     }
+
+    public function equals($o)
+    {
+      if ($o instanceof SimpleColumn)
+      {
+        return $this->columnId == $o->columnId;
+      }
+      return FALSE;
+    }
+
+    public function toString() { return $this->columnId; }
 
     public function getAllAggregationColumns()
     {

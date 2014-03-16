@@ -35,6 +35,23 @@
       return $result;
     }
 
+    public function getAggregationColumns()
+    {
+      $result = array();
+      foreach ($this->sortColumns as $columnSort)
+      {
+        $col = $columnSort->getColumn();
+        foreach ($col->getAllAggregationColumns() as $innerCol)
+        {
+          if (!in_array($innerCol, $result))
+          {
+            $result[] = $innerCol;
+          }
+        }
+      }
+      return $result;
+    }
+
     public function getScalarFunctionColumns()
     {
       $result = array();

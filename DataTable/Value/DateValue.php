@@ -93,7 +93,7 @@
 
     protected function innerToQueryString()
     {
-      return "DATE '" . $this->getYear() . "-" . $this->getMonth() . "-" . $this->getDayOfMonth() . "'";
+      return "DATE '" . $this->getYear() . "-" . sprintf("%02d", $this->getMonth() + 1) . "-" . sprintf("%02d", $this->getDayOfMonth()) . "'";
     }
   }
 ?>

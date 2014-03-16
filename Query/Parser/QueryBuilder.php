@@ -1,11 +1,13 @@
 <?php
   namespace Google\Visualization\DataSource\Query\Parser;
 
+  use Google\Visualization\DataSource\Base\InvalidQueryException;
+  use Google\Visualization\DataSource\Base\MessagesEnum;
   use Google\Visualization\DataSource\Query\Query;
 
   class QueryBuilder
   {
-    public static function parseQuery($tqValue)
+    public static function parseQuery($tqValue, $ulocale)
     {
       if (empty($tqValue))
       {
@@ -15,11 +17,12 @@
         try
         {
           $query = QueryParser::parseString($tqValue);
-        } catch (ParseException $ex)
+        } catch (InvalidQueryException $ex)
         {
           $messageToUserAndLog = $ex->getMessage();
-          throw new InvalidQueryException(MessagesEnum::PARSE_ERROR . ": ". $messageToUserAndLog);
+          throw new InvalidQueryException(MessagesEnum::getMessageWithArgs(MessagesEnum::PARSE_ERROR, $ulocale, $messageToUserAndLog));
         }
+        $query->setLocaleForUserMessages($locale);
         $query->validate();
       }
       return $query;

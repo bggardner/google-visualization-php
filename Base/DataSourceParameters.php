@@ -36,7 +36,7 @@
         if (count($nameValuePair) != 2)
         {
           //$log->error("Invalid name-value pair: " + part);
-          throw new DataSourceException(ReasonType::INVALID_REQUEST, self::DEFAULT_ERROR_MSG . "(malformed)");
+          throw new DataSourceException(ReasonType::INVALID_REQUEST, self::DEFAULT_ERROR_MSG . " (malformed)");
         }
         $name = $nameValuePair[0];
         $value = $nameValuePair[1];
