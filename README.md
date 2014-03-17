@@ -19,12 +19,6 @@ Features
     - ROUND (round to a digit of precision)
 
 
-Limitations
------------
-
-- MySQL Helper does not support MILLISECOND query statement
-
-
 Dependencies
 ------------
 
