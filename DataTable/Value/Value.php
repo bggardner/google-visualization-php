@@ -9,7 +9,7 @@
     abstract public function isNull();
     abstract protected function innerToQueryString();
 
-    public function getNullValueFromValueType($type)
+    public static function getNullValueFromValueType($type)
     {
       switch($type)
       {

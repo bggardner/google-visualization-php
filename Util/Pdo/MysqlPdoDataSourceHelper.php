@@ -304,7 +304,7 @@ SELECT * FROM
     {
       $scalarFunction = $col->getFunction();
       $sfClass = get_class($scalarFunction);
-      switch (substr($sfClass, strrpos($sfClass, "\\") + 1)) // Drop namespace
+      switch ($sfClass = substr($sfClass, strrpos($sfClass, "\\") + 1)) // Drop namespace
       {
         case "AbsoluteValue":
           $columnId = "ABS";
@@ -354,9 +354,13 @@ SELECT * FROM
             case TimeComponent::DAY_OF_WEEK:
               $columnId = "DAYOFWEEK";
               break;
+            case TimeComponent::MILLISECOND:
+              $columnId = "MICROSECOND";
+              break;
             default:
               throw new InvalidQueryException("Unsupported date/time function " . $scalarFunction->getFunctionName());
           }
+          break;
         case "ToDate":
           $columnId = "DATE"; // Does not support milliseconds, only DATE or DATETIME data types
           break;
@@ -398,6 +402,10 @@ SELECT * FROM
           $columnIds[] = self::getColumnId($column);
         }
         $columnId .= implode(",", $columnIds) . ")";
+      }
+      if ($scalarFunction->getFunctionName() == TimeComponent::MILLISECOND)
+      {
+        $columnId .= " * 1000";
       }
       return $columnId;
     }
