@@ -94,6 +94,15 @@
       return $valueType;
     }
 
+    public function equals($o)
+    {
+      if ($o instanceof AggregationColumn)
+      {
+        return $this->aggregatedColumn->equals($o->aggregatedColumn) && $this->aggregationType == $o->aggregationType;
+      }
+      return FALSE;
+    }
+
     public function toQueryString()
     {
       return strtoupper($this->aggregationType) . "(" . $this->aggregatedColumn->toQueryString() . ")";

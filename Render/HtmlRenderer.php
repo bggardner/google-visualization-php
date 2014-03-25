@@ -55,7 +55,7 @@
           $tdElement = $document->createElement("td");
           if ($cell->isNull())
           {
-            $tdElement->appendChild($document->createCDATASection("&x00a0;"));
+            $tdElement->appendChild($document->createCDATASection("&#x00a0;"));
           } else
           {
             switch ($valueType)

@@ -7,10 +7,19 @@
   class DateValue extends Value
   {
     protected $dateTime;
+    protected $year;
+    protected $month;
+    protected $dayOfMonth;
 
-    public function __construct($dateStr)
+    public function __construct($dateStr = NULL)
     {
-      $this->dateTime = new DateTime($dateStr);
+      if (!is_null($dateStr))
+      {
+        $this->dateTime = new DateTime($dateStr);
+        $this->year = $this->dateTime->format("Y") + 0;
+        $this->month = $this->dateTime->format("n") - 1;
+        $this->dayOfMonth = $this->dateTime->format("j");
+      }
     }
 
     public static function getNullValue()
@@ -34,17 +43,17 @@
 
     public function getYear()
     {
-      return (int) $this->dateTime->format("Y");
+      return $this->year;
     }
 
     public function getMonth()
     {
-      return (int) $this->dateTime->format("n") - 1;
+      return $this->month;
     }
 
     public function getDayOfMonth()
     {
-      return (int) $this->dateTime->format("j");
+      return $this->dayOfMonth;
     }
 
     public function getType()

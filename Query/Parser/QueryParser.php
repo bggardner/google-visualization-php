@@ -217,11 +217,23 @@
       } else if (preg_match("/^date\s+(?:(?:\"(".self::DATE_FORMAT.")\")|(?:'(".self::DATE_FORMAT.")'))$/", $valueString, $matches))
       {
         $matches = array_values(array_filter($matches, "strlen"));
-        $value = new DateValue($matches[1]);
+        try
+        {
+          $value = new DateValue($matches[1]);
+        } catch (\Exception $e)
+        {
+          throw new InvalidQueryException("Encountered invalid date [" . $matches[1] . "]");
+        }
       } else if (preg_match("/^timeofday\s+(?:(?:\"(".self::TIME_FORMAT.")\")|(?:'(".self::TIME_FORMAT.")'))$/", $valueString, $matches))
       {
         $matches = array_values(array_filter($matches, "strlen"));
-        $value = new TimeOfDayValue($matches[1]);
+        try
+        {
+          $value = new TimeOfDayValue($matches[1]);
+        } catch (\Exception $e)
+        {
+          throw new InvalidQueryException("Encountered invalid time [" . $matches[1] . "]");
+        }
       } else if (preg_match("/^datetime\s+(?:(?:\"(".self::DATE_FORMAT."\s+".self::TIME_FORMAT.")\")|(?:'(".self::DATE_FORMAT."\s+".self::TIME_FORMAT.")'))$/", $valueString, $matches))
       {
         $matches = array_values(array_filter($matches, "strlen"));

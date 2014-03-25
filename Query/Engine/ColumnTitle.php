@@ -5,6 +5,7 @@
   use Google\Visualization\DataSource\DataTable\DataTable;
   use Google\Visualization\DataSource\DataTable\Value\ValueType;
   use Google\Visualization\DataSource\Query\AggregationColumn;
+  use Google\Visualization\DataSource\Query\AggregationType;
 
   class ColumnTitle
   {

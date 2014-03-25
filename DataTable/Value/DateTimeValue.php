@@ -6,8 +6,6 @@
 
   class DateTimeValue extends DateValue
   {
-    protected $dateTime;
-
     public function getHourOfDay()
     {
       return (int) $this->dateTime->format("H");
