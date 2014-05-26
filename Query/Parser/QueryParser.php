@@ -186,10 +186,10 @@
         {
           $filter = new ColumnColumnFilter(self::parseColumn($args[0]), self::parseColumn($args[1]), $operator);
         }
-      } else if (preg_match("/\sis\s(?:not)?\snull\s(.*)/i", $filterString, $matches))
+      } else if (preg_match("/(.*)\sis\s(?:not\s)?null/i", $filterString, $matches))
       {
-        $filter = new ColumnIsNullFilter(new SimpleColumn($matches[1]));
-        if (preg_match("/\sis\snot\snull\s/i", $filterString))
+        $filter = new ColumnIsNullFilter(self::parseColumn($matches[1]));
+        if (preg_match("/\sis\snot\snull/i", $filterString))
         {
           $filter = new NegationFilter($filter);
         }

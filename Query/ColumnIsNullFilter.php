@@ -1,5 +1,8 @@
 <?php
-  namespace Google\Visualization\Datasource\Query;
+  namespace Google\Visualization\DataSource\Query;
+
+  use Google\Visualization\DataSource\DataTable\DataTable;
+  use Google\Visualization\DataSource\DataTable\TableRow;
 
   class ColumnIsNullFilter extends QueryFilter
   {
