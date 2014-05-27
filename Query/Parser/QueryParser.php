@@ -149,6 +149,14 @@
             $andSubFilters[] = self::parseNonCompoundFilter($andArg);
           }
         }
+        foreach ($orSubFilters as $i => $orSubFilter)
+        {
+          if ($orSubFilter instanceof CompoundFilter)
+          {
+            $andSubFilters[] = $orSubFilter;
+            unset($orSubFilters[$i]);
+          }
+        }
         if (count($andSubFilters) == 1)
         {
           $orSubFilters[] = $andSubFilters[0];
@@ -156,6 +164,7 @@
         {
           $orSubFilters[] = new CompoundFilter(CompoundFilter::LOGICAL_OPERATOR_AND, $andSubFilters);
         }
+        $orSubFilters = array_values($orSubFilters);
       }
       if (count($orSubFilters) == 1)
       {
