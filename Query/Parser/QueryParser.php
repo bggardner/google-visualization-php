@@ -109,69 +109,164 @@
 
     protected static function parseFilter($argumentString)
     {
-      $orSubFilters = array();
-      $orArgs = self::splitFilter($argumentString, CompoundFilter::LOGICAL_OPERATOR_OR);
-      foreach ($orArgs as $i => $orArg)
+      $a = array();
+      $innerExp = "";
+      $outerExp = "";
+      $parensCount = 0;
+      $sfCount = 0;
+      for ($i = 0; $i < strlen($argumentString); $i++)
       {
-        if ($orArg instanceof QueryFilter)
+        $c = substr($argumentString, $i, 1);
+        if ($c == ")" && (($parensCount + $sfCount) == 0))
         {
-          $orSubFilters[] = $orArg;
-          continue;
+          throw new InvalidQueryException("Unmatched parenthesis in WHERE clause");
         }
-        if (trim(($orArg = preg_replace("/(^\{\d+\})|(\{\d+\}$)/", "", trim($orArg), 1))) == "")
+        if ($c == "(" && preg_match(self::SCALAR_FUNCTIONS_REGEXP, $innerExp))
         {
-          continue;
+          $sfCount++;
         }
+        if ($c == "(" && $sfCount == 0)
+        {
+          $parensCount++;
+          if ($parensCount == 1)
+          {
+            $innerExp = "";
+            continue;
+          }
+        } else if ($c == ")" && $sfCount == 0)
+        {
+          $parensCount--;
+          if ($parensCount == 0)
+          {
+            $filter = self::parseFilter($innerExp);
+            $outerExp .= "{" . count($a) . "}";
+            $a[] = $filter;
+            $innerExp = "";
+            continue;
+          }
+        } else if ($parensCount == 0)
+        {
+          $outerExp .= $c;
+        }
+        if ($c == ")" && $sfCount > 0)
+        {
+          $sfCount--;
+        }
+        $innerExp .= $c;
+      }
+      if ($parensCount != 0 || $sfCount != 0)
+      {
+        throw new InvalidQueryException("Unmatched parenthesis in WHERE clause");
+      }
+
+      // Handle NOTs
+      while (preg_match("/((^|\s+)not\s*)(\{\d\})?/i", $outerExp, $matches, PREG_OFFSET_CAPTURE))
+      {
+        $notMatch = $matches[1][0];
+        $notOffset = $matches[1][1];
+        $notExp = substr($outerExp, $notOffset + strlen($notMatch));
+        if (preg_match("/\s+(and|or)\s+/i", $notExp, $matches, PREG_OFFSET_CAPTURE))
+        {
+          $loOffset = $matches[0][1];
+          $notExp = substr($notExp, 0, $loOffset);
+        } else
+        {
+          $loOffset = strlen($outerExp);
+        }
+        if (preg_match("/\{(\d)\}/", $notExp, $matches))
+        {
+          $key = $matches[1] + 0;
+          $a[$key] = new NegationFilter($a[$key]);
+          $outerExp = substr($outerExp, 0, $notOffset) . " {" . $key . "} " . substr($outerExp, $notOffset + strlen($notMatch));
+        } else {
+          $a[] = new NegationFilter(self::parseNonCompoundFilter($notExp));
+          $outerExp = substr($outerExp, 0, $notOffset) . " {" . (count($a) ? max(array_keys($a)) : 0) . "} " . substr($outerExp, $notOffset + strlen($notMatch) + $loOffset);
+        }
+      }
+
+      // Handle ANDs
+      // TODO: Fix for literal containing " and "
+      while (preg_match("/\s+and\s+/i", $outerExp, $matches, PREG_OFFSET_CAPTURE))
+      {
+        $andMatch = $matches[0][0];
+        $andOffset = $matches[0][1];
+        if (preg_match("/\s+or\s+/i", substr($outerExp, 0, $andOffset), $matches, PREG_OFFSET_CAPTURE))
+        {
+          $orMatch = $matches[0][0];
+          $orOffset = $matches[0][1];
+          $startOffset = $orOffset + strlen($orMatch);
+        } else
+        {
+          $startOffset = 0;
+        }
+        if (preg_match("/\s+(and|or)\s+/i", $outerExp, $matches, PREG_OFFSET_CAPTURE, $andOffset + strlen($andMatch)))
+        {
+          $andOrOffset = $matches[0][1];
+          $endOffset = $andOrOffset;
+        } else
+        {
+          $endOffset = strlen($outerExp);
+        }
+        $andExp = substr($outerExp, $startOffset, $endOffset);
+        $andArgs = explode($andMatch, $andExp);
         $andSubFilters = array();
-        $andArgs = self::splitFilter($orArg, CompoundFilter::LOGICAL_OPERATOR_AND);
-        if (count($andArgs) == 1 && $andArgs[0] == $orArg)
+        foreach ($andArgs as $andArg)
         {
-          $orSubFilters[] = self::parseNonCompoundFilter($orArg);
-          continue;
-        }
-        foreach ($andArgs as $j => $andArg)
-        {
-          if ($andArg instanceof QueryFilter)
+          if (preg_match("/\{(\d)\}/i", $andArg, $matches))
           {
-            $andSubFilters[] = $andArg;
-            continue;
-          }
-          if (trim($andArg = preg_replace("/(^\{\d+\})|(\{\d+\}$)/", "", trim($andArg))) == "")
+            $key = $matches[1][0] + 0;
+            $andSubFilters[] = $a[$key];
+            unset($a[$key]);
+          } else
           {
-            $andSubFilters[] = array_pop($orSubFilters);
-            continue;
-          }
-          if (($notPos = stripos($andArg, "not ")) !== FALSE)
-          {
-            $andArg = substr($andArg, $notPos + 4);
-            $andSubFilters[] = new NegationFilter(self::parseNonCompoundFilter($andArg));
-          } else {
             $andSubFilters[] = self::parseNonCompoundFilter($andArg);
           }
         }
-        foreach ($orSubFilters as $i => $orSubFilter)
+        $a[] = new CompoundFilter(CompoundFilter::LOGICAL_OPERATOR_AND, $andSubFilters);
+        $outerExp = substr($outerExp, 0, $startOffset) . " {" . (count($a) ? max(array_keys($a)) : 0) . "} " . substr($outerExp, $endOffset);
+      }
+
+      // Handle ORs
+      // TODO: Fix for literal containing " or "
+      while (preg_match("/\s+or\s+/i", $outerExp, $matches, PREG_OFFSET_CAPTURE))
+      {
+        $orMatch = $matches[0][0];
+        $orOffset = $matches[0][1];
+        $startOffset = 0;
+        if (preg_match("/\s+or\s+/i", $outerExp, $matches, PREG_OFFSET_CAPTURE, $orOffset + strlen($orMatch)))
         {
-          if ($orSubFilter instanceof CompoundFilter)
+          $nextOrOffset = $matches[0][1];
+          $endOffset = $nextOrOffset;
+        } else
+        {
+          $endOffset = strlen($outerExp);
+        }
+        $orExp = substr($outerExp, $startOffset, $endOffset);
+        $orArgs = explode($orMatch, $orExp);
+        $orSubFilters = array();
+        foreach ($orArgs as $orArg)
+        {
+          if (preg_match("/\{(\d)\}/i", $orArg, $matches))
           {
-            $andSubFilters[] = $orSubFilter;
-            unset($orSubFilters[$i]);
+            $key = $matches[1][0] + 0;
+            $orSubFilters[] = $a[$key];
+            unset($a[$key]);
+          } else
+          {
+            $orSubFilters[] = self::parseNonCompoundFilter($orArg);
           }
         }
-        if (count($andSubFilters) == 1)
-        {
-          $orSubFilters[] = $andSubFilters[0];
-        } else if (count($andSubFilters) > 0)
-        {
-          $orSubFilters[] = new CompoundFilter(CompoundFilter::LOGICAL_OPERATOR_AND, $andSubFilters);
-        }
-        $orSubFilters = array_values($orSubFilters);
+        $a[] = new CompoundFilter(CompoundFilter::LOGICAL_OPERATOR_OR, $orSubFilters);
+        $outerExp = substr($outerExp, 0, $startOffset) . " {" . (count($a) ? max(array_keys($a)) : 0) . "} " . substr($outerExp, $endOffset);
       }
-      if (count($orSubFilters) == 1)
+
+      if (count($a) == 0)
       {
-        $filter = $orSubFilters[0];
-      } else if (count($orSubFilters) > 0)
+        $filter = self::parseNonCompoundFilter($outerExp);
+      } else if (count($a) == 1)
       {
-        $filter = new CompoundFilter(CompoundFilter::LOGICAL_OPERATOR_OR, $orSubFilters);
+        $a = array_values($a);
+        $filter = $a[0];
       }
       return $filter;
     }
@@ -252,73 +347,6 @@
         throw new InvalidQueryException("Encountered unknown value [" . $valueString . "]");
       }
       return $value;
-    }
-
-    protected static function splitFilter($filterString, $separator)
-    {
-      $a = array();
-      $innerExp = "";
-      $outerExp = "";
-      $parensCount = 0;
-      $sfCount = 0;
-      $negate = FALSE;
-      for ($i = 0; $i < strlen($filterString); $i++)
-      {
-        $c = substr($filterString, $i, 1);
-        if ($c == "(" && preg_match(self::SCALAR_FUNCTIONS_REGEXP, $innerExp))
-        {
-          $sfCount++;
-        }
-        if ($c == "(" && $sfCount == 0)
-        {
-          $parensCount++;
-          if ($parensCount == 1)
-          {
-            if (($notPos = stripos($outerExp, "not ")) !== FALSE)
-            {
-              $negate = TRUE;
-              $outerExp = substr_replace($outerExp, "", $notPos, 4);
-            }
-            $innerExp = "";
-            continue;
-          }
-        } else if ($c == ")" && $sfCount == 0)
-        {
-          $parensCount--;
-          if ($parensCount == 0)
-          {
-            $filter = self::parseFilter($innerExp);
-            if (!($filter instanceof CompoundFilter)) // Non-compound parenthesized expression
-            {
-              $outerExp .= $innerExp;
-            }
-            if ($negate)
-            {
-              $filter = new NegationFilter($filter);
-              $negate = FALSE;
-            }
-            $outerExp .= "{" . count($a) . "}";
-            $a[] = $filter;
-            $innerExp = "";
-            continue;
-          }
-        } else if ($parensCount == 0)
-        {
-          $outerExp .= $c;
-        }
-        if ($c == ")" && $sfCount > 0)
-        {
-          $sfCount--;
-        }
-        $innerExp .= $c;
-      }
-      if ($parensCount != 0 || $sfCount != 0)
-      {
-        throw new InvalidQueryException("Unmatched parenthesis in WHERE clause");
-      }
-      $pattern = "/\s" . $separator . "\s/i";
-      $a = array_merge($a, preg_split($pattern, $outerExp, -1, PREG_SPLIT_NO_EMPTY));
-      return $a;
     }
 
     protected static function parseGroup($argumentString)
