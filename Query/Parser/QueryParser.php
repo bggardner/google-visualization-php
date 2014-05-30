@@ -53,7 +53,7 @@
     const NOT_BACK_QUOTED = "(?:[^`]*`[^`]*`)*[^`]$";
     const SCALAR_FUNCTIONS_REGEXP = "/(year)|(month)|(day)|(hour)|(minute)|(second)|(millisecond)|(quarter)|(dayOfWeek)|(now)|(dateDiff)|(toDate)|(upper)|(lower)$/i";
     const TIME_FORMAT = "[0-9]{2}:[0-9]{2}:[0-9]{2}(?:.[0-9]{0-3})?";
-    const VALUE_PATTERN = "/^(?:\(?(\"[^\"]*\")|('[^']*')|(-?[0-9]*\.?[0-9]+)|(true|false)|((?:date|timeofday|datetime)\s+(?:(?:\"[^\"]*\")|(?:'[^']*')))\)?)$/i";
+    const VALUE_PATTERN = "/^(?:\(?(\"(?:[^\"]|(?:\"\"))*\")|('(?:[^']|(?:''))*')|(-?[0-9]*\.?[0-9]+)|(true|false)|((?:date|timeofday|datetime)\s+(?:(?:\"[^\"]*\")|(?:'[^']*')))\)?)$/i";
 
     protected static $clauseSeparators = array(
       "select",
@@ -109,6 +109,7 @@
 
     protected static function parseFilter($argumentString)
     {
+      if (is_null($argumentString)) { return NULL; }
       $a = array();
       $innerExp = "";
       $outerExp = "";
@@ -314,10 +315,13 @@
       else if (preg_match("/^-?[0-9]*\.?[0-9]+$/", $valueString))
       {
         $value = new NumberValue($valueString);
-      } else if (preg_match("/^(?:(?:\"([^\"]*)\")|(?:'([^']*)'))$/", $valueString, $matches))
+      } else if (preg_match("/^(?:(?:\"((?:[^\"]|(?:\"\"))*)\")|(?:'((?:[^']|(''))*)'))$/", $valueString, $matches))
       {
         $matches = array_values(array_filter($matches, "strlen"));
-        $value = new TextValue($matches[1]);
+        $value = $matches[1];
+        $value = strpos($valueString, "\"") === 0 ? str_replace("\"\"", "\"", $value) : $value; // Unescape double-quotes if double-quoted string
+        $value = strpos($valueString, "'") === 0 ? str_replace("''", "'", $value) : $value; // Unescape single-quotes if single-quoted string
+        $value = new TextValue($value);
       } else if (preg_match("/^date\s+(?:(?:\"(".self::DATE_FORMAT.")\")|(?:'(".self::DATE_FORMAT.")'))$/", $valueString, $matches))
       {
         $matches = array_values(array_filter($matches, "strlen"));
