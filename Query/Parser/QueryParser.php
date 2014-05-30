@@ -53,6 +53,7 @@
     const NOT_BACK_QUOTED = "(?:[^`]*`[^`]*`)*[^`]$";
     const SCALAR_FUNCTIONS_REGEXP = "/(year)|(month)|(day)|(hour)|(minute)|(second)|(millisecond)|(quarter)|(dayOfWeek)|(now)|(dateDiff)|(toDate)|(upper)|(lower)$/i";
     const TIME_FORMAT = "[0-9]{2}:[0-9]{2}:[0-9]{2}(?:.[0-9]{0-3})?";
+    const UNQUOTED_LOOKAHEAD = "(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)(?=(?:[^']*'[^']*')*[^']*$)";
     const VALUE_PATTERN = "/^(?:\(?(\"(?:[^\"]|(?:\"\"))*\")|('(?:[^']|(?:''))*')|(-?[0-9]*\.?[0-9]+)|(true|false)|((?:date|timeofday|datetime)\s+(?:(?:\"[^\"]*\")|(?:'[^']*')))\)?)$/i";
 
     protected static $clauseSeparators = array(
@@ -110,11 +111,17 @@
     protected static function parseFilter($argumentString)
     {
       if (is_null($argumentString)) { return NULL; }
+      // Check for unquoted curly braces (invalid syntax and used as subfilter placeholders in parser
+      if (preg_match("/([\{\}])" . self::UNQUOTED_LOOKAHEAD . "/", $argumentString, $matches))
+      {
+        throw new InvalidQueryException("Invalid character [" . $matches[1] . "] in WHERE clause");
+      }
       $a = array();
       $innerExp = "";
       $outerExp = "";
       $parensCount = 0;
       $sfCount = 0;
+      // Step through each character and recurse if parenthesized expression is found
       for ($i = 0; $i < strlen($argumentString); $i++)
       {
         $c = substr($argumentString, $i, 1);
@@ -161,12 +168,12 @@
       }
 
       // Handle NOTs
-      while (preg_match("/((^|\s+)not\s*)(\{\d\})?/i", $outerExp, $matches, PREG_OFFSET_CAPTURE))
+      while (preg_match("/((^|\s+)not\s*)(\{\d\})?" . self::UNQUOTED_LOOKAHEAD . "/i", $outerExp, $matches, PREG_OFFSET_CAPTURE))
       {
         $notMatch = $matches[1][0];
         $notOffset = $matches[1][1];
         $notExp = substr($outerExp, $notOffset + strlen($notMatch));
-        if (preg_match("/\s+(and|or)\s+/i", $notExp, $matches, PREG_OFFSET_CAPTURE))
+        if (preg_match("/\s+(and|or)\s+" . self::UNQUOTED_LOOKAHEAD . "/i", $notExp, $matches, PREG_OFFSET_CAPTURE))
         {
           $loOffset = $matches[0][1];
           $notExp = substr($notExp, 0, $loOffset);
@@ -174,7 +181,7 @@
         {
           $loOffset = strlen($outerExp);
         }
-        if (preg_match("/\{(\d)\}/", $notExp, $matches))
+        if (preg_match("/\{(\d)\}" . self::UNQUOTED_LOOKAHEAD . "/", $notExp, $matches))
         {
           $key = $matches[1] + 0;
           $a[$key] = new NegationFilter($a[$key]);
@@ -186,12 +193,11 @@
       }
 
       // Handle ANDs
-      // TODO: Fix for literal containing " and "
-      while (preg_match("/\s+and\s+/i", $outerExp, $matches, PREG_OFFSET_CAPTURE))
+      while (preg_match("/\s+and\s+" . self::UNQUOTED_LOOKAHEAD . "/i", $outerExp, $matches, PREG_OFFSET_CAPTURE))
       {
         $andMatch = $matches[0][0];
         $andOffset = $matches[0][1];
-        if (preg_match("/\s+or\s+/i", substr($outerExp, 0, $andOffset), $matches, PREG_OFFSET_CAPTURE))
+        if (preg_match("/\s+or\s+" . self::UNQUOTED_LOOKAHEAD . "/i", substr($outerExp, 0, $andOffset), $matches, PREG_OFFSET_CAPTURE))
         {
           $orMatch = $matches[0][0];
           $orOffset = $matches[0][1];
@@ -200,7 +206,7 @@
         {
           $startOffset = 0;
         }
-        if (preg_match("/\s+(and|or)\s+/i", $outerExp, $matches, PREG_OFFSET_CAPTURE, $andOffset + strlen($andMatch)))
+        if (preg_match("/\s+(and|or)\s+" . self::UNQUOTED_LOOKAHEAD . "/i", $outerExp, $matches, PREG_OFFSET_CAPTURE, $andOffset + strlen($andMatch)))
         {
           $andOrOffset = $matches[0][1];
           $endOffset = $andOrOffset;
@@ -213,7 +219,7 @@
         $andSubFilters = array();
         foreach ($andArgs as $andArg)
         {
-          if (preg_match("/\{(\d)\}/i", $andArg, $matches))
+          if (preg_match("/\{(\d)\}" . self::UNQUOTED_LOOKAHEAD . "/i", $andArg, $matches))
           {
             $key = $matches[1][0] + 0;
             $andSubFilters[] = $a[$key];
@@ -228,13 +234,12 @@
       }
 
       // Handle ORs
-      // TODO: Fix for literal containing " or "
-      while (preg_match("/\s+or\s+/i", $outerExp, $matches, PREG_OFFSET_CAPTURE))
+      while (preg_match("/\s+or\s+" . self::UNQUOTED_LOOKAHEAD . "/i", $outerExp, $matches, PREG_OFFSET_CAPTURE))
       {
         $orMatch = $matches[0][0];
         $orOffset = $matches[0][1];
         $startOffset = 0;
-        if (preg_match("/\s+or\s+/i", $outerExp, $matches, PREG_OFFSET_CAPTURE, $orOffset + strlen($orMatch)))
+        if (preg_match("/\s+or\s+" . self::UNQUOTED_LOOKAHEAD . "/i", $outerExp, $matches, PREG_OFFSET_CAPTURE, $orOffset + strlen($orMatch)))
         {
           $nextOrOffset = $matches[0][1];
           $endOffset = $nextOrOffset;
@@ -247,7 +252,7 @@
         $orSubFilters = array();
         foreach ($orArgs as $orArg)
         {
-          if (preg_match("/\{(\d)\}/i", $orArg, $matches))
+          if (preg_match("/\{(\d)\}" . self::UNQUOTED_LOOKAHEAD . "/i", $orArg, $matches))
           {
             $key = $matches[1][0] + 0;
             $orSubFilters[] = $a[$key];

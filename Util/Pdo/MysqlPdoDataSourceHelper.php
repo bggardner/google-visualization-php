@@ -39,7 +39,6 @@ SELECT * FROM
 ( SELECT `t`.*, @row := @row + 1 AS `rownum` FROM (SELECT @row := 0) AS `r`, (" . $queryString. ") AS `t`
 ) AS `ranked` WHERE `rownum` % " . $query->getRowSkipping() . " = 1";
       }
-var_dump($queryString);
       return $queryString;
     }
 
