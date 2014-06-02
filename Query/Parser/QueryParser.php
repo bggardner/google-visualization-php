@@ -168,7 +168,7 @@
       }
 
       // Handle NOTs
-      while (preg_match("/((^|\s+)not\s*)(\{\d\})?" . self::UNQUOTED_LOOKAHEAD . "/i", $outerExp, $matches, PREG_OFFSET_CAPTURE))
+      while (preg_match("/(?>!is)((^|\s+)not\s*)(\{\d\})?" . self::UNQUOTED_LOOKAHEAD . "/i", $outerExp, $matches, PREG_OFFSET_CAPTURE))
       {
         $notMatch = $matches[1][0];
         $notOffset = $matches[1][1];
