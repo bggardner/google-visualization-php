@@ -279,7 +279,7 @@
 
     protected static function parseNonCompoundFilter($filterString)
     {
-      if (preg_match("/(<=)|(?:(<)[^=>])|(?:[^<](>)[^=])|(>=)|(?:[^!<>](=))|(!=)|(<>)|(?:\s+(?:(contains)|(starts with)|(ends with)|(matches)|(like))\s+)/i", $filterString, $matches))
+      if (preg_match("/(<=)|(?:(<)[^=>])|(?:[^<](>)[^=])|(>=)|(?:[^!<>](=))|(!=)|(<>)|(?:\s+(?:(contains)|(starts with)|(ends with)|(matches)|(like))\s+)" . self::UNQUOTED_LOOKAHEAD . "/i", $filterString, $matches))
       {
         $matches = array_values(array_filter($matches, "strlen"));
         $args = explode($matches[1], $filterString);
@@ -296,10 +296,10 @@
         {
           $filter = new ColumnColumnFilter(self::parseColumn($args[0]), self::parseColumn($args[1]), $operator);
         }
-      } else if (preg_match("/(.*)\sis\s(?:not\s)?null/i", $filterString, $matches))
+      } else if (preg_match("/(.*)\sis\s(?:not\s)?null" . self::UNQUOTED_LOOKAHEAD . "/i", $filterString, $matches))
       {
         $filter = new ColumnIsNullFilter(self::parseColumn($matches[1]));
-        if (preg_match("/\sis\snot\snull/i", $filterString))
+        if (preg_match("/\sis\snot\snull" . self::UNQUOTED_LOOKAHEAD . "/i", $filterString))
         {
           $filter = new NegationFilter($filter);
         }
@@ -327,7 +327,7 @@
         $value = strpos($valueString, "\"") === 0 ? str_replace("\"\"", "\"", $value) : $value; // Unescape double-quotes if double-quoted string
         $value = strpos($valueString, "'") === 0 ? str_replace("''", "'", $value) : $value; // Unescape single-quotes if single-quoted string
         $value = new TextValue($value);
-      } else if (preg_match("/^date\s+(?:(?:\"(".self::DATE_FORMAT.")\")|(?:'(".self::DATE_FORMAT.")'))$/", $valueString, $matches))
+      } else if (preg_match("/^date\s+(?:(?:\"(" . self::DATE_FORMAT . ")\")|(?:'(" . self::DATE_FORMAT . ")'))$/", $valueString, $matches))
       {
         $matches = array_values(array_filter($matches, "strlen"));
         try
@@ -337,7 +337,7 @@
         {
           throw new InvalidQueryException("Encountered invalid date [" . $matches[1] . "]");
         }
-      } else if (preg_match("/^timeofday\s+(?:(?:\"(".self::TIME_FORMAT.")\")|(?:'(".self::TIME_FORMAT.")'))$/", $valueString, $matches))
+      } else if (preg_match("/^timeofday\s+(?:(?:\"(" . self::TIME_FORMAT . ")\")|(?:'(" . self::TIME_FORMAT . ")'))$/", $valueString, $matches))
       {
         $matches = array_values(array_filter($matches, "strlen"));
         try
@@ -347,7 +347,7 @@
         {
           throw new InvalidQueryException("Encountered invalid time [" . $matches[1] . "]");
         }
-      } else if (preg_match("/^datetime\s+(?:(?:\"(".self::DATE_FORMAT."\s+".self::TIME_FORMAT.")\")|(?:'(".self::DATE_FORMAT."\s+".self::TIME_FORMAT.")'))$/", $valueString, $matches))
+      } else if (preg_match("/^datetime\s+(?:(?:\"(" . self::DATE_FORMAT . "\s+" . self::TIME_FORMAT . ")\")|(?:'(" . self::DATE_FORMAT . "\s+" . self::TIME_FORMAT . ")'))$/", $valueString, $matches))
       {
         $matches = array_values(array_filter($matches, "strlen"));
         $value = new DateTimeValue($matches[1]);
@@ -632,7 +632,7 @@
           throw new InvalidQueryException("Column name is required.");
         }
         $column = new SimpleColumn($matches[1]);
-      } else if (preg_match("/[^,]\s*[\+\-\*\/%]/", $arg)) // Arithmetic expression
+      } else if (preg_match("/[^,]\s*[\+\-\*\/%]" . self::UNQUOTED_LOOKAHEAD . "/", $arg)) // Arithmetic expression
       {
         $operators = self::getOuterOperators($arg);
         if (preg_match("/[\*\/%]/", implode("", $operators))) // Multiply, divide, or modulo
