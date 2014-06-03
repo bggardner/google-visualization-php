@@ -168,7 +168,7 @@
       }
 
       // Handle NOTs
-      while (preg_match("/(?<!is)((^|\s+)not\s*)(\{\d\})?" . self::UNQUOTED_LOOKAHEAD . "/i", $outerExp, $matches, PREG_OFFSET_CAPTURE))
+      while (preg_match("/(?<!is)((^|\s+)not\s*)(\{\d+\})?" . self::UNQUOTED_LOOKAHEAD . "/i", $outerExp, $matches, PREG_OFFSET_CAPTURE))
       {
         $notMatch = $matches[1][0];
         $notOffset = $matches[1][1];
@@ -181,7 +181,7 @@
         {
           $loOffset = strlen($outerExp);
         }
-        if (preg_match("/\{(\d)\}" . self::UNQUOTED_LOOKAHEAD . "/", $notExp, $matches))
+        if (preg_match("/\{(\d+)\}" . self::UNQUOTED_LOOKAHEAD . "/", $notExp, $matches))
         {
           $key = $matches[1] + 0;
           $a[$key] = new NegationFilter($a[$key]);
@@ -219,7 +219,7 @@
         $andSubFilters = array();
         foreach ($andArgs as $andArg)
         {
-          if (preg_match("/\{(\d)\}" . self::UNQUOTED_LOOKAHEAD . "/i", $andArg, $matches))
+          if (preg_match("/\{(\d+)\}" . self::UNQUOTED_LOOKAHEAD . "/i", $andArg, $matches))
           {
             $key = $matches[1][0] + 0;
             $andSubFilters[] = $a[$key];
@@ -252,9 +252,9 @@
         $orSubFilters = array();
         foreach ($orArgs as $orArg)
         {
-          if (preg_match("/\{(\d)\}" . self::UNQUOTED_LOOKAHEAD . "/i", $orArg, $matches))
+          if (preg_match("/\{(\d+)\}" . self::UNQUOTED_LOOKAHEAD . "/", $orArg, $matches))
           {
-            $key = $matches[1][0] + 0;
+            $key = $matches[1] + 0;
             $orSubFilters[] = $a[$key];
             unset($a[$key]);
           } else
