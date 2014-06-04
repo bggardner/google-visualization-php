@@ -221,7 +221,7 @@
         {
           if (preg_match("/\{(\d+)\}" . self::UNQUOTED_LOOKAHEAD . "/i", $andArg, $matches))
           {
-            $key = $matches[1][0] + 0;
+            $key = $matches[1] + 0;
             $andSubFilters[] = $a[$key];
             unset($a[$key]);
           } else
