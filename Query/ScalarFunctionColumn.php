@@ -27,6 +27,16 @@
       return $this->scalarFunction->getFunctionName() . self::COLUMN_FUNCTION_TYPE_SEPARATOR . implode(self::COLUMN_COLUMN_SEPARATOR, $colIds);
     }
 
+    public function getAllSimpleColumnIds()
+    {
+      $columnIds = array();
+      foreach ($this->columns as $column)
+      {
+        $columnIds = array_merge($columnIds, $column->getAllSimpleColumnIds());
+      }
+      return $columnIds;
+    }
+
     public function getFunction()
     {
       return $this->scalarFunction;
