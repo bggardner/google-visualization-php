@@ -121,6 +121,11 @@
       return $this->rows;
     }
 
+    public function getRow($rowIndex)
+    {
+      return $this->rows[$rowIndex];
+    }
+
     public function getWarnings()
     {
       return $this->warnings;
