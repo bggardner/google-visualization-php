@@ -315,7 +315,13 @@
       $valueString = trim($valueString);
       if (preg_match("/^true|false$/i", $valueString))
       {
-        $value = new BooleanValue($valueString);
+        if (strcasecmp($valueString, "false") == 0)
+        {
+          $value = new BooleanValue(FALSE);
+        } else
+        {
+          $value = new BooleanValue(TRUE);
+        }
       }
       else if (preg_match("/^-?[0-9]*\.?[0-9]+$/", $valueString))
       {

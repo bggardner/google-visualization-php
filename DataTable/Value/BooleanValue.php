@@ -36,6 +36,23 @@
       return is_null($this->value);
     }
 
+    public function compareTo(Value $other)
+    {
+      if ($this == $other)
+      {
+        return 0;
+      }
+      if ($this->isNull())
+      {
+        return -1;
+      }
+      if ($other->isNull())
+      {
+        return 1;
+      }
+      return ($this->value == $other->value ? 0 : ($this->value ? 1 : -1));
+    }
+
     public function __toString()
     {
       if (is_null($this->value))
