@@ -221,9 +221,9 @@ SELECT * FROM
       $groupByClause = " GROUP BY ";
       $queryGroup = $query->getGroup();
       $newColumnIds = array();
-      foreach ($queryGroup->getColumnIds() as $groupColumnId)
+      foreach ($queryGroup->getColumns() as $groupColumn)
       {
-        $newColumnIds[] = "`" . $groupColumnId . "`";
+        $newColumnIds[] = self::getColumnId($groupColumn);
       }
       $groupByClause .= implode(",", $newColumnIds);
       return $groupByClause;
