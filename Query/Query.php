@@ -487,7 +487,7 @@
         if (!in_array($col, $groupColumns))
         {
           $messageToLogAndUser = MessagesEnum::getMessageWithArgs(MessagesEnum::ADD_COL_TO_GROUP_BY_OR_AGG, $this->localeForUserMessages, $col->getId());
-          //$log->error($messageToLogAndUser
+          //$log->error($messageToLogAndUser);
           throw new InvalidQueryException($messageToLogAndUser);
         }
       } else if ($col instanceof ScalarFunctionColumn)
