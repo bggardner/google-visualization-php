@@ -1,8 +1,8 @@
 <?php
   namespace Google\Visualization\DataSource\Query\ScalarFunction;
 
-  use Google\Visualization\DataSource\DataTabe\Value\NumberValue;
-  use Google\Visualization\DataSource\DataTabe\Value\ValueType;
+  use Google\Visualization\DataSource\DataTable\Value\NumberValue;
+  use Google\Visualization\DataSource\DataTable\Value\ValueType;
 
   class AbsoluteValue implements ScalarFunction
   {

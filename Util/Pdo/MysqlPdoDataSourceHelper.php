@@ -321,8 +321,14 @@ SELECT * FROM
         case "DateDiff":
           $columnId = "DATEDIFF";
           break;
+        case "Left":
+          $columnId = "LEFT";
+          break;
         case "Lower":
           $columnId = "LOWER";
+          break;
+        case "Right":
+          $columnId = "RIGHT";
           break;
         case "Round":
           $columnId = "ROUND";

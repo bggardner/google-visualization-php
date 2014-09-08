@@ -1,6 +1,12 @@
 <?php
   namespace Google\Visualization\DataSource\Query;
 
+  use RuntimeException;
+
+  use Google\Visualization\DataSource\DataTable\DataTable;
+  use Google\Visualization\DataSource\DataTable\TableCell;
+  use Google\Visualization\DataSource\DataTable\TableRow;
+  use Google\Visualization\DataSource\Query\AbstractColumn;
   use Google\Visualization\DataSource\Query\ScalarFunction\ScalarFunction;
 
   class ScalarFunctionColumn extends AbstractColumn
@@ -13,7 +19,15 @@
 
     public function __construct($columns, ScalarFunction $scalarFunction)
     {
-      $this->columns = $columns;
+      $this->columns = array();
+      foreach ($columns as $column)
+      {
+        if (!($column instanceof AbstractColumn))
+        {
+          throw new RuntimeException("The first argument to ScalarFunctionColumn must be an array of AbstractColumns");
+        }
+        $this->columns[] = $column;
+      }
       $this->scalarFunction = $scalarFunction;
     }
 
@@ -45,6 +59,22 @@
     public function getColumns()
     {
       return $this->columns;
+    }
+
+    public function getCell(ColumnLookup $lookup, TableRow $row)
+    {
+      if ($lookup->containsColumn($this))
+      {
+        $columnIndex = $lookup->getColumnIndex($this);
+        return $row->getCell($columnIndex);
+      }
+
+      $functionParameters = array();
+      foreach($this->columns as $column)
+      {
+        $functionParameters[] = $column->getValue($lookup, $row);
+      }
+      return new TableCell($this->scalarFunction->evaluate($functionParameters));
     }
 
     public function getAllSimpleColumns()
@@ -95,7 +125,7 @@
         return $dataTable->getColumnDescription($this->getId())->getType();
       }
       $types = array();
-      foreach ($this->columns as $columns)
+      foreach ($this->columns as $column)
       {
         $types[] = $column->getValueType($dataTable);
       }

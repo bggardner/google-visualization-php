@@ -35,10 +35,12 @@
   use Google\Visualization\DataSource\Query\ScalarFunction\CurrentDateTime;
   use Google\Visualization\DataSource\Query\ScalarFunction\DateDiff;
   use Google\Visualization\DataSource\Query\ScalarFunction\Difference;
+  use Google\Visualization\DataSource\Query\ScalarFunction\Left;
   use Google\Visualization\DataSource\Query\ScalarFunction\Lower;
   use Google\Visualization\DataSource\Query\ScalarFunction\Modulo;
   use Google\Visualization\DataSource\Query\ScalarFunction\Product;
   use Google\Visualization\DataSource\Query\ScalarFunction\Quotient;
+  use Google\Visualization\DataSource\Query\ScalarFunction\Right;
   use Google\Visualization\DataSource\Query\ScalarFunction\Round;
   use Google\Visualization\DataSource\Query\ScalarFunction\Sum;
   use Google\Visualization\DataSource\Query\ScalarFunction\TimeComponentExtractor;
@@ -51,7 +53,7 @@
   {
     const DATE_FORMAT = "[0-9]{4}-[0-9]{2}-[0-9]{2}";
     const NOT_BACK_QUOTED = "(?:[^`]*`[^`]*`)*[^`]$";
-    const NAMED_SCALAR_FUNCTIONS_REGEXP = "/(year)|(month)|(day)|(hour)|(minute)|(second)|(millisecond)|(quarter)|(dayOfWeek)|(now)|(dateDiff)|(toDate)|(upper)|(lower)|(concat)|(concat_ws)|(abs)|(round)$/i";
+    const NAMED_SCALAR_FUNCTIONS_REGEXP = "/(year)|(month)|(day)|(hour)|(minute)|(second)|(millisecond)|(quarter)|(dayOfWeek)|(now)|(dateDiff)|(toDate)|(upper)|(lower)|(concat)|(concat_ws)|(abs)|(round)|(right)|(left)$/i";
     const TIME_FORMAT = "[0-9]{2}:[0-9]{2}:[0-9]{2}(?:.[0-9]{0-3})?";
     const COMPARISON_REGEXP = "(<=)|(?:(<)[^=>])|(?:[^<](>)[^=])|(>=)|(?:[^!<>](=))|(!=)|(<>)|(?:\s+(?:(contains)|(starts with)|(ends with)|(matches)|(like))\s+)";
     const UNQUOTED_LOOKAHEAD = "(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)(?=(?:[^']*'[^']*')*[^']*$)";
@@ -727,6 +729,12 @@
               break;
             case "ROUND":
               $scalarFunction = new Round();
+              break;
+            case "RIGHT":
+              $scalarFunction = new Right();
+              break;
+            case "LEFT":
+              $scalarFunction = new Left();
               break;
             default:
               throw new InvalidQueryException("Invalid column function " . $colFunc);

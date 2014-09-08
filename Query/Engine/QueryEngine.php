@@ -158,7 +158,6 @@
       {
         return $table;
       }
-
       $oldColumnIndices = clone $columnIndices;
 
       $selectedColumns = $query->getSelection()->getColumns();
@@ -170,7 +169,6 @@
       $currIndex = 0;
       foreach ($selectedColumns as $col)
       {
-        $colIndices = $columnIndices->getColumnIndices($col);
         $colIndices = $oldColumnIndices->getColumnIndices($col);
         $selectedIndices = array_merge($selectedIndices, $colIndices);
         if (count($colIndices) == 0)
