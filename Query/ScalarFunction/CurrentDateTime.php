@@ -1,6 +1,10 @@
 <?php
   namespace Google\Visualization\DataSource\Query\ScalarFunction;
 
+  use DateTime;
+
+  use Google\Visualization\DataSource\DataTable\Value\DateTimeValue;
+
   class CurrentDateTime implements ScalarFunction
   {
     const FUNCTION_NAME = "now";
@@ -12,7 +16,7 @@
 
     public function evaluate($values)
     {
-      return new DateTimeValue(new DateTime());
+      return new DateTimeValue("now");
     }
 
     public function getReturnType($types)

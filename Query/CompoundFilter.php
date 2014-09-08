@@ -1,6 +1,8 @@
 <?php
   namespace Google\Visualization\DataSource\Query;
 
+  use RuntimeException;
+
   use Google\Visualization\DataSource\DataTable\DataTable;
   use Google\Visualization\DataSource\DataTable\TableRow;
 
@@ -15,6 +17,13 @@
     public function __construct($operator, $subFilters)
     {
       $this->operator = $operator;
+      foreach ($subFilters as $subFilter)
+      {
+        if (!($subFilter instanceof QueryFilter))
+        {
+          throw new RuntimeException("Compound filter subFilter is not of type QueryFilter");
+        }
+      }
       $this->subFilters = $subFilters;
     }
 
@@ -23,7 +32,7 @@
 static $a = 0;
       if (!count($this->subFilters))
       {
-        throw new RuntimeException("Compound filter with empty subFilters list");
+        throw new RuntimeException("Compound filter with empty subFilters array");
       }
       foreach ($this->subFilters as $subFilter)
       {

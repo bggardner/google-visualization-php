@@ -51,8 +51,9 @@
   {
     const DATE_FORMAT = "[0-9]{4}-[0-9]{2}-[0-9]{2}";
     const NOT_BACK_QUOTED = "(?:[^`]*`[^`]*`)*[^`]$";
-    const SCALAR_FUNCTIONS_REGEXP = "/(year)|(month)|(day)|(hour)|(minute)|(second)|(millisecond)|(quarter)|(dayOfWeek)|(now)|(dateDiff)|(toDate)|(upper)|(lower)|(concat)|(concat_ws)|(abs)|(round)$/i";
+    const NAMED_SCALAR_FUNCTIONS_REGEXP = "/(year)|(month)|(day)|(hour)|(minute)|(second)|(millisecond)|(quarter)|(dayOfWeek)|(now)|(dateDiff)|(toDate)|(upper)|(lower)|(concat)|(concat_ws)|(abs)|(round)$/i";
     const TIME_FORMAT = "[0-9]{2}:[0-9]{2}:[0-9]{2}(?:.[0-9]{0-3})?";
+    const COMPARISON_REGEXP = "(<=)|(?:(<)[^=>])|(?:[^<](>)[^=])|(>=)|(?:[^!<>](=))|(!=)|(<>)|(?:\s+(?:(contains)|(starts with)|(ends with)|(matches)|(like))\s+)";
     const UNQUOTED_LOOKAHEAD = "(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)(?=(?:[^']*'[^']*')*[^']*$)";
     const VALUE_PATTERN = "/^(?:\(?(\"(?:[^\"]|(?:\"\"))*\")|('(?:[^']|(?:''))*')|(-?[0-9]*\.?[0-9]+)|(true|false)|((?:date|timeofday|datetime)\s+(?:(?:\"[^\"]*\")|(?:'[^']*')))\)?)$/i";
 
@@ -129,7 +130,7 @@
         {
           throw new InvalidQueryException("Unmatched parenthesis in WHERE clause");
         }
-        if ($c == "(" && preg_match(self::SCALAR_FUNCTIONS_REGEXP, $innerExp))
+        if ($c == "(" && preg_match(self::NAMED_SCALAR_FUNCTIONS_REGEXP, $innerExp))
         {
           $sfCount++;
         }
@@ -146,9 +147,16 @@
           $parensCount--;
           if ($parensCount == 0)
           {
-            $filter = self::parseFilter($innerExp);
-            $outerExp .= "{" . count($a) . "}";
-            $a[] = $filter;
+            if (preg_match("/" . self::COMPARISON_REGEXP . self::UNQUOTED_LOOKAHEAD . "/", $innerExp))
+            {
+              $filter = self::parseFilter($innerExp);
+              $outerExp .= "{" . count($a) . "}";
+              $a[] = $filter;
+              $innerExp = "";
+              continue;
+            }
+            // Not a comparison expression, must be column, so reinsert with parentheses
+            $outerExp = "(" . $innerExp . ")";
             $innerExp = "";
             continue;
           }
@@ -279,7 +287,7 @@
 
     protected static function parseNonCompoundFilter($filterString)
     {
-      if (preg_match("/(<=)|(?:(<)[^=>])|(?:[^<](>)[^=])|(>=)|(?:[^!<>](=))|(!=)|(<>)|(?:\s+(?:(contains)|(starts with)|(ends with)|(matches)|(like))\s+)" . self::UNQUOTED_LOOKAHEAD . "/i", $filterString, $matches))
+      if (preg_match("/" . self::COMPARISON_REGEXP . self::UNQUOTED_LOOKAHEAD . "/i", $filterString, $matches))
       {
         $matches = array_values(array_filter($matches, "strlen"));
         $args = explode($matches[1], $filterString);
