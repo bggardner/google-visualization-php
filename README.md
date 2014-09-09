@@ -12,10 +12,12 @@ Features
 - Executes the query on an existing DataTable or retrieves one using Helper classes:
     - PDO Helper abstract class with extensions:
         - MySQL (performs automatic type casting)
-- Additional query language functions:
+- Additional query language functions (MySQL syntax):
     - ABS (absolute value)
     - CONCAT (concatenate strings)
     - CONCAT_WS (concatenate strings with separator)
+    - LEFT (left-most characters of a string)
+    - RIGHT (right-most characters of a string)
     - ROUND (round to a digit of precision)
 
 
