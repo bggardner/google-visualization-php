@@ -1,6 +1,8 @@
 <?php
   namespace Google\Visualization\DataSource\Render;
 
+  use Google\Visualization\DataSource\Base\ReasonType;
+  use Google\Visualization\DataSource\Base\ResponseStatus;
   use Google\Visualization\DataSource\DataTable\DataTable;
   use Google\Visualization\DataSource\DataTable\ValueFormatter;
   use Google\Visualization\DataSource\DataTable\Value\ValueType;
@@ -74,7 +76,7 @@
 
     public static function renderCsvError(ResponseStatus $responseStatus)
     {
-      $sb = "Error: " . $responseStatus->getReasonType()->getMessageForReasonType(NULL);
+      $sb = "Error: " . ReasonType::getMessageForReasonType($responseStatus->getReasonType(), NULL);
       $sb .= ". " . $responseStatus->getDescription();
       return self::escapeString($sb);
     }

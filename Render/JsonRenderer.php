@@ -4,8 +4,9 @@
   use stdClass;
   use Google\Visualization\DataSource\Base\DataSourceParameters;
   use Google\Visualization\DataSource\Base\OutputType;
-  use Google\Visualization\DataSource\Base\StatusType;
+  use Google\Visualization\DataSource\Base\ReasonType;
   use Google\Visualization\DataSource\Base\ResponseStatus;
+  use Google\Visualization\DataSource\Base\StatusType;
   use Google\Visualization\DataSource\DataTable\ColumnDescription;
   use Google\Visualization\DataSource\DataTable\DataTable;
   use Google\Visualization\DataSource\DataTable\TableCell;
@@ -26,11 +27,12 @@ $tableAsString = rand();
       $fault = new stdClass();
       if (!empty($reasonType))
       {
-        $fault->message = $reasonType;
+        $fault->reason = strtolower($reasonType);
+        $fault->message = ReasonType::getMessageForReasonType($reasonType, NULL);
       }
       if (!empty($description))
       {
-        $fault->description = $description;
+        $fault->detailed_message = $description;
       }
       return $fault;
     }

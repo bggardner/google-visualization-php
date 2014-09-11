@@ -4,6 +4,7 @@
   use DOMDocument;
   use DOMElement;
 
+  use Google\Visualization\DataSource\Base\ReasonType;
   use Google\Visualization\DataSource\Base\ResponseStatus;
   use Google\Visualization\DataSource\DataTable\DataTable;
   use Google\Visualization\DataSource\DataTable\ValueFormatter;
@@ -91,6 +92,15 @@
       }
       $bodyElement->appendChild($tableElement);
 
+      foreach ($dataTable->getWarnings() as $warning)
+      {
+        $bodyElement->appendChild($document->createElement("br"));
+        $bodyElement->appendChild($document->createElement("br"));
+        $messageElement = $document->createElement("div");
+        $messageElement->appendChild($document->createTextNode(ReasonType::getMessageForReasonType($warning->getReasonType()) . ". " . $warning->getMessage()));
+        $bodyElement->appendChild($messageElement);
+      }
+
       return self::transformDocumentToHtmlString($document);
     }
 
@@ -135,7 +145,7 @@
 
       if (!is_null($reason))
       {
-        $text = "Reason: " . $reason;
+        $text = "Reason: " . ReasonType::getMessageForReasonType($reason, NULL);
         self::appendSimpleText($document, $bodyElement, $text);
       }
 
