@@ -10,8 +10,9 @@ Features
 - A PHP implementation of the [Google Chart Tools Datasource Protocol](https://developers.google.com/chart/interactive/docs/dev/implementing_data_source)
 - Parses a [Google Visualization Query](https://developers.google.com/chart/interactive/docs/querylanguage)
 - Executes the query on an existing DataTable or retrieves one using Helper classes:
-    - PDO Helper abstract class with extensions:
-        - MySQL (performs automatic type casting)
+    - PDO Helper abstract class with extensions that perform automatic type casting:
+        - MySQL
+        - PostgreSQL
 - Additional query language functions (MySQL syntax):
     - ABS (absolute value)
     - CONCAT (concatenate strings)
