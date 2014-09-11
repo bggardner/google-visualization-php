@@ -28,8 +28,15 @@
     public static function getLocalizedMessageFromBundle($bundleName, $key, $locale)
     {
       $bundleName = str_replace("\\", "/", $bundleName);
-      $bundleName = substr(__DIR__, 0, strpos(__DIR__, str_replace("\\", "/", __NAMESPACE__))) . "/" . $bundleName;
-      return ResourceBundle::create($locale, $bundleName, TRUE)->get($key);
+      $bundleName = substr(__DIR__, 0, strpos(__DIR__, str_replace("\\", "/", __NAMESPACE__))) . $bundleName;
+      $rb = ResourceBundle::create($locale, $bundleName , TRUE);
+      if (!($rb instanceof ResourceBundle))
+      {
+        $rb = ResourceBundle::create($locale, NULL , TRUE);
+//        $messageToUser = "Server Error: ResourceBundle could not be created (" . intl_error_name(intl_get_error_code()) . ").";
+//        exit($messageToUser);
+      }
+      return $rb->get($key);
     }
 
     public static function getLocalizedMessageFromBundleWithArguments($bundleName, $key, $args, $locale)

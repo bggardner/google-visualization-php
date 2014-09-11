@@ -49,7 +49,7 @@
 
     public function getCustomProperties()
     {
-      if (is_null($this->customProperites))
+      if (is_null($this->customProperties))
       {
         return array();
       }

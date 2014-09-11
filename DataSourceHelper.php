@@ -42,7 +42,7 @@
         self::setResponse(self::generateResponse($newDataTable, $dsRequest), $dsRequest);
       } catch (DataSourceException $e)
       {
-        if (is_null($dsRequest))
+        if (!isset($dsRequest))
         {
           $dsRequest = DataSourceRequest::getDefaultDataSourceRequest();
         }
@@ -183,9 +183,9 @@
 
     public static function getLocaleFromRequest()
     {
-      if (isset($_GET[LOCALE_REQUEST_PARAMETER]))
+      if (isset($_GET[self::LOCALE_REQUEST_PARAMETER]))
       {
-        $locale = $_GET[LOCALE_REQUEST_PARAMETER];
+        $locale = $_GET[self::LOCALE_REQUEST_PARAMETER];
       } else
       {
         $locale = Locale::acceptFromHttp($_SERVER["HTTP_ACCEPT_LANGUAGE"]);

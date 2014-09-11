@@ -92,7 +92,7 @@
       $query->setRowOffset(self::parseRowOffset($clauses["offset"]));
       $query->setLabels(self::parseLabels($clauses["label"]));
       $query->setUserFormatOptions(self::parseUserFormatOptions($clauses["format"]));
-      $query->setOptions(self::parseOptions($clauses["options "]));
+      $query->setOptions(self::parseOptions($clauses["options"]));
       return $query;
     }
 

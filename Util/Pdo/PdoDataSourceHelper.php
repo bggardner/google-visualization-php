@@ -14,6 +14,7 @@
   use Google\Visualization\DataSource\DataTable\Value\DateTimeValue;
   use Google\Visualization\DataSource\DataTable\Value\DateValue;
   use Google\Visualization\DataSource\DataTable\Value\NumberValue;
+  use Google\Visualization\DataSource\DataTable\Value\TimeOfDayValue;
   use Google\Visualization\DataSource\DataTable\Value\TextValue;
   use Google\Visualization\DataSource\DataTable\Value\ValueType;
   use Google\Visualization\DataSource\Query\Query;
@@ -21,8 +22,15 @@
 
   abstract class PdoDataSourceHelper
   {
+    abstract protected static function validateDriver($driver);
+
     public static function executeQuery(Query $query, PDO $db, $tableName)
     {
+      if (!static::validateDriver($driver = $db->getAttribute(PDO::ATTR_DRIVER_NAME)))
+      {
+        $messageToUser = "PDO driver (" . $driver . ") must match PDODataSourceHelper (" . get_called_class() . ")";
+        throw new DataSourceException(ReasonType::INTERNAL_ERROR, $messageToUser);
+      }
       $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
       $queryString = static::buildSqlQuery($query, $tableName);

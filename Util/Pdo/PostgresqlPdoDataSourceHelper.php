@@ -22,7 +22,7 @@
   use Google\Visualization\DataSource\Query\ScalarFunctionColumn;
   use Google\Visualization\DataSource\Query\ScalarFunction\TimeComponent;
 
-  class MysqlPdoDataSourceHelper extends PdoDataSourceHelper
+  class PostgresqlPdoDataSourceHelper extends PdoDataSourceHelper
   {
     protected static function buildSqlQuery(Query $query, $tableName)
     {
@@ -32,13 +32,6 @@
       $queryString .= self::buildGroupByClause($query);
       $queryString .= self::buildOrderByClause($query);
       $queryString .= self::buildLimitAndOffsetClause($query);
-      if ($query->hasRowSkipping())
-      {
-        $queryString = "
-SELECT * FROM
-( SELECT `t`.*, @row := @row + 1 AS `rownum` FROM (SELECT @row := 0) AS `r`, (" . $queryString. ") AS `t`
-) AS `ranked` WHERE `rownum` % " . $query->getRowSkipping() . " = 1";
-      }
       return $queryString;
     }
 
@@ -68,9 +61,9 @@ SELECT * FROM
         //$log->error("No table name provided.");
         throw new DataSourceException(ReasonType::OTHER, "No table name provided.");
       }
-      $fromClause = " FROM `";
+      $fromClause = ' FROM "';
       $fromClause .= $tableName;
-      $fromClause .= "`";
+      $fromClause .= '"';
       return $fromClause;
     }
 
@@ -270,10 +263,10 @@ SELECT * FROM
     {
       if ($abstractColumn instanceof SimpleColumn)
       {
-        $columnId = "`" . $abstractColumn->getId() . "`";
+        $columnId = '"' . $abstractColumn->getId() . '"';
       } else if ($abstractColumn instanceof AggregationColumn)
       {
-        $columnId = self::getAggregationFunction($abstractColumn->getAggregationType()) . "(`" . $abstractColumn->getAggregatedColumn() . "`)";
+        $columnId = self::getAggregationFunction($abstractColumn->getAggregationType()) . '("' . $abstractColumn->getAggregatedColumn() . '")';
       } else
       {
         $columnId = self::getScalarFunction($abstractColumn);
@@ -310,26 +303,23 @@ SELECT * FROM
           $columnId = "ABS";
           break;
         case "Concatenation":
-          $columnId = "CONCAT";
-          break;
-        case "ConcatenationWithSeparator":
-          $columnId = "CONCAT_WS";
+          $operator = "||";
           break;
         case "CurrentDateTime":
           $columnId = "NOW";
           break;
         case "DateDiff":
-          $columnId = "DATEDIFF";
+          $columnId = "AGE";
           break;
         case "Left":
-          $columnId = "LEFT";
-          break;
+          $columns = $col->getColumns();
+          return "SUBSTRING(" . self::getColumnId($columns[0]) . " FROM 1 FOR " . self::getColumnId($columns[1]) . ")";
         case "Lower":
           $columnId = "LOWER";
           break;
         case "Right":
-          $columnId = "RIGHT";
-          break;
+          $columns = $col->getColumns();
+          return "SUBSTRING(" . self::getColumnId($columns[0]). " FROM CHAR_LENGTH(" . self::getColumnId($columns[0]) . ") - " . self::getColumnId($columns[1]) . " + 1)";
         case "Round":
           $columnId = "ROUND";
           break;
@@ -343,7 +333,7 @@ SELECT * FROM
               $columnId = "MONTH";
               break;
             case TimeComponent::DAY:
-              $columnId = "DAYOFMONTH";
+              $columnId = "DAY";
               break;
             case TimeComponent::HOUR:
               $columnId = "HOUR";
@@ -358,14 +348,16 @@ SELECT * FROM
               $columnId = "QUARTER";
               break;
             case TimeComponent::DAY_OF_WEEK:
-              $columnId = "DAYOFWEEK";
+              $columnId = "DOW";
               break;
             case TimeComponent::MILLISECOND:
-              $columnId = "MICROSECOND";
+              $columnId = "MILLISECONDS";
               break;
             default:
               throw new InvalidQueryException("Unsupported date/time function " . $scalarFunction->getFunctionName());
           }
+          $columns = $col->getColumns();
+          return "EXTRACT(" . $columnId . ", " . self::getColumnId($columns[0]) . ")";
           break;
         case "ToDate":
           $columnId = "DATE"; // Does not support milliseconds, only DATE or DATETIME data types
@@ -396,9 +388,12 @@ SELECT * FROM
       $columns = $col->getColumns();
       if (isset($operator))
       {
-        $columnId = "(" . self::getColumnId($columns[0]);
-        $columnId .= " " . $operator . " ";
-        $columnId .= self::getColumnId($columns[1]) . ")";
+        $columnIds = array();
+        foreach ($columns as $column)
+        {
+          $columnIds[] = self::getColumnId($column);
+        }
+        $columnId = "(" . implode(" " . $operator . " ", $columnIds) . ")";
       } else
       {
         $columnId .= "(";
@@ -409,10 +404,6 @@ SELECT * FROM
         }
         $columnId .= implode(",", $columnIds) . ")";
       }
-      if ($scalarFunction->getFunctionName() == TimeComponent::MILLISECOND)
-      {
-        $columnId .= " * 1000";
-      }
       return $columnId;
     }
 
@@ -420,50 +411,50 @@ SELECT * FROM
     {
       switch ($metaData["native_type"])
       {
-        case "SHORT":		// SMALLINT
-        case "INT24":		// MEDIUMINT
-        case "LONG":		// INT
-        case "NEWDECIMAL":	// DECIMAL
-        case "FLOAT":		// FLOAT
-        case "DOUBLE":		// DOUBLE, REAL
-            $valueType = ValueType::NUMBER;
-            break;
-        case "BIT":		// BIT
-        case "LONGLONG":	// BIGINT, SERIAL (MySQL returns TRUE and FALSE as LONGLONG)
-        case "TINY":            // TINYINT, BOOLEAN
-          if ($metaData["len"] == 1)
-          {
-            $valueType = ValueType::BOOLEAN; // Assume boolean for len = 1
-          } else
-          {
-            $valueType = ValueType::NUMBER;
-          }
+        case "float4":
+        case "float8":
+        case "int2":
+        case "int4":
+        case "int8":
+        case "numeric":
+          $valueType = ValueType::NUMBER;
           break;
-        case "DATE":		// DATE
-          $valueType = ValueType::DATE;
-          break;
-        case "DATETIME":	// DATETIME
-        case "TIMESTAMP":	// TIMESTAMP
-          $valueType = ValueType::DATETIME;
-          break;
-        case "TIME":		// TIME
+        case "time":
+        case "timetz":
           $valueType = ValueType::TIMEOFDAY;
           break;
-        case "STRING":		// CHAR, BINARY, ENUM
-        case "VAR_STRING":	// VARCHAR
-        case "BLOB":		// TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT
+        case "abstime":
+        case "timestamp":
+        case "timestamptz":
+          $valueType = ValueType::DATETIME;
+          break;
+        case "date":
+          $valueType = ValueType::DATE;
+          break;
+        case "bpchar":
+        case "cidr":
+        case "inet":
+        case "macaddr":
+        case "money":
+        case "text":
+        case "varbit":
+        case "varchar":
+        case "xml":
           $valueType = ValueType::TEXT;
           break;
+        case "bit":
+        case "bool":
+          $valueType = ValueType::BOOLEAN;
+          break;
         default:
-          // Spatial data types not supported
-          throw new TypeMismatchException("MySQL data type '" . $metaData["native_type"] . "' cannot be matched to a ValueType");
+          throw new TypeMismatchException("PostgreSQL data type '" . $metaData["native_type"] . "' cannot be matched to a ValueType");
       }
       return $valueType;
     }
 
     protected static function validateDriver($driver)
     {
-      return $driver == "mysql";
+      return $driver == "pgsql";
     }
   }
 ?>

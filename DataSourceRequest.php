@@ -78,13 +78,13 @@
 
     protected function createQueryFromRequest()
     {
-      $queryString = $_REQUEST[self::QUERY_REQUEST_PARAMETER];
+      $queryString = isset($_REQUEST[self::QUERY_REQUEST_PARAMETER]) ? $_REQUEST[self::QUERY_REQUEST_PARAMETER] : "";
       $this->query = DataSourceHelper::parseQuery($queryString);
     }
 
     protected function createDataSourceParametersFromRequest()
     {
-      $this->dsParams = new DataSourceParameters($_REQUEST[self::DATASOURCE_REQUEST_PARAMETER]);
+      $this->dsParams = new DataSourceParameters(isset($_REQUEST[self::DATASOURCE_REQUEST_PARAMETER]) ? $_REQUEST[self::DATASOURCE_REQUEST_PARAMETER] : "");
       if ($this->dsParams->getOutputType() == OutputType::JSON && !$this->sameOrigin)
       {
         $this->dsParams->setOutputType(OutputType::JSONP);

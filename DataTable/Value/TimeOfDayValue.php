@@ -7,5 +7,10 @@
     {
       return ValueType::TIMEOFDAY;
     }
+
+    public function getHours()
+    {
+      return (int) $this->dateTime->format("G");
+    }
   }
 ?>

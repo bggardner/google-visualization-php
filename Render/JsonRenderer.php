@@ -86,7 +86,7 @@ $tableAsString = rand();
       if (($statusType != StatusType::ERROR) && !is_null($data))
       {
         $response->sig = self::getSignature($data);
-        $response->table = self::objectifyDataTable($data, TRUE, TRUE, isJsonp);
+        $response->table = self::objectifyDataTable($data, TRUE, TRUE, $isJsonp);
       }
 
       if ($isJsonp)
@@ -122,7 +122,7 @@ $tableAsString = rand();
         $row->c = array();
         foreach ($tableRow->getCells() as $cell)
         {
-          $row->c[] = self::objectifyCellJson($cell, $includeFormatting, $renderDateAsDateContructor);
+          $row->c[] = self::objectifyCellJson($cell, $includeFormatting, $renderDateAsDateConstructor);
         }
         $table->rows[] = $row;
       }
@@ -149,11 +149,10 @@ $tableAsString = rand();
             {
               $valueJson .= "new ";
             }
-            $dateTime = $value->getDateTime();
             $valueJson .= "Date(";
-            $valueJson .= $dateTime->format("Y") . ",";
-            $valueJson .= ($dateTime->format("n") - 1) . ",";
-            $valueJson .= $dateTime->format("j");
+            $valueJson .= $value->getYear() . ",";
+            $valueJson .= $value->getMonth() . ",";
+            $valueJson .= $value->getDayOfMonth();
             $valueJson .= ")";
             break;
           case ValueType::NUMBER:
@@ -169,16 +168,24 @@ $tableAsString = rand();
               $valueJson .= "new ";
             }
             $valueJson .= "Date(";
-            $valueJson .= $dateTime->format("Y") . ",";
-            $valueJson .= ($dateTime->format("n") - 1) . ","; // PHP months are not zero-based
-            $valueJson .= $dateTime->format("j") . ",";
-            $valueJson .= $dateTime->format("G") . ",";
-            $valueJson .= ($dateTime->format("i") + 0) . ","; // Remove leading zero
-            $valueJson .= ($dateTime->format("s") + 0);  // Remove leading zero
+            $valueJson .= $value->getYear() . ",";
+            $valueJson .= $value->getMonth() . ","; // PHP months are not zero-based
+            $valueJson .= $value->getDayOfMonth() . ",";
+            $valueJson .= $value->getHourOfDay() . ",";
+            $valueJson .= $value->getMinute() . ",";
+            $valueJson .= $value->getSecond();
             $valueJson .= ")";
             break;
+          case ValueType::TIMEOFDAY:
+            $valueJson .= "[";
+            $valueJson .= $value->getHours() . ",";
+            $valueJson .= $value->getMinute() . ",";
+            $valueJson .= $value->getSecond() . ",";
+            $valueJson .= $value->getMillisecond();
+            $valueJson .= "]";
+            break;
           default:
-            throw new IllegalArgumentException("Illegal value Type " + $type);
+            exit("Illegal value Type " + $type);
         }
       }
 

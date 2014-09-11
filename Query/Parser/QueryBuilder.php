@@ -22,7 +22,7 @@
           $messageToUserAndLog = $ex->getMessage();
           throw new InvalidQueryException(MessagesEnum::getMessageWithArgs(MessagesEnum::PARSE_ERROR, $ulocale, $messageToUserAndLog));
         }
-        $query->setLocaleForUserMessages($locale);
+        $query->setLocaleForUserMessages($ulocale);
         $query->validate();
       }
       return $query;
