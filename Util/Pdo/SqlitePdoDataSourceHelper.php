@@ -22,7 +22,7 @@
   use Google\Visualization\DataSource\Query\ScalarFunctionColumn;
   use Google\Visualization\DataSource\Query\ScalarFunction\TimeComponent;
 
-  class PostgresqlPdoDataSourceHelper extends PdoDataSourceHelper
+  class SqlitePdoDataSourceHelper extends PdoDataSourceHelper
   {
     protected static function buildSqlQuery(Query $query, $tableName)
     {
@@ -181,15 +181,15 @@
           $clause = $value1 . ">=" . $value2;
           break;
         case ComparisonFilter::OPERATOR_CONTAINS:
-          $value2 = str_replace("'", "\\'", $value2);
+          $value2 = str_replace("'", "", $value2);
           $clause = $value1 . " LIKE '%" . $value2 . "%'";
           break;
         case ComparisonFilter::OPERATOR_STARTS_WITH:
-          $value2 = str_replace("'", "\\'", $value2);
+          $value2 = str_replace("'", "", $value2);
           $clause = $value1 . " LIKE '" . $value2 . "%'";
           break;
         case ComparisonFilter::OPERATOR_ENDS_WITH:
-          $value2 = str_replace("'", "\\'", $value2);
+          $value2 = str_replace("'", "", $value2);
           $clause = $value1 . " LIKE '%" . $value2 . "'";
           break;
         case ComparisonFilter::OPERATOR_MATCHES:
@@ -313,13 +313,13 @@
           break;
         case "Left":
           $columns = $col->getColumns();
-          return "SUBSTRING(" . self::getColumnId($columns[0]) . " FROM 1 FOR " . self::getColumnId($columns[1]) . ")";
+          return "SUBSTR(" . self::getColumnId($columns[0]) . ", 1, " . self::getColumnId($columns[1]) . ")";
         case "Lower":
           $columnId = "LOWER";
           break;
         case "Right":
           $columns = $col->getColumns();
-          return "SUBSTRING(" . self::getColumnId($columns[0]). " FROM CHAR_LENGTH(" . self::getColumnId($columns[0]) . ") - " . self::getColumnId($columns[1]) . " + 1)";
+          return "SUBSTR(" . self::getColumnId($columns[0]). ",  " . (-self::getColumnId($columns[1])) . ")";
         case "Round":
           $columnId = "ROUND";
           break;
@@ -327,40 +327,34 @@
           switch ($scalarFunction->getFunctionName())
           {
             case TimeComponent::YEAR:
-              $columnId = "YEAR";
+              $columnId = "%Y";
               break;
             case TimeComponent::MONTH:
-              $columnId = "MONTH";
+              $columnId = "%m";
               break;
             case TimeComponent::DAY:
-              $columnId = "DAY";
+              $columnId = "%d";
               break;
             case TimeComponent::HOUR:
-              $columnId = "HOUR";
+              $columnId = "%H";
               break;
             case TimeComponent::MINUTE:
-              $columnId = "MINUTE";
+              $columnId = "%M";
               break;
             case TimeComponent::SECOND:
-              $columnId = "SECOND";
-              break;
-            case TimeComponent::QUARTER:
-              $columnId = "QUARTER";
+              $columnId = "%S";
               break;
             case TimeComponent::DAY_OF_WEEK:
-              $columnId = "DOW";
-              break;
-            case TimeComponent::MILLISECOND:
-              $columnId = "MILLISECONDS";
+              $columnId = "%w";
               break;
             default:
               throw new InvalidQueryException("Unsupported date/time function " . $scalarFunction->getFunctionName());
           }
           $columns = $col->getColumns();
-          return "EXTRACT(" . $columnId . ", " . self::getColumnId($columns[0]) . ")";
+          return "STRFTIME('" . $columnId . "', " . self::getColumnId($columns[0]) . ")";
           break;
         case "ToDate":
-          $columnId = "DATE"; // Does not support milliseconds, only DATE or DATETIME data types
+          $columnId = "DATE";
           break;
         case "Upper":
           $columnId = "UPPER";
@@ -409,52 +403,37 @@
 
     protected static function metaDataToValueType($metaData)
     {
-      switch ($metaData["native_type"])
+      switch ($metaData["sqlite:decl_type"])
       {
-        case "float4":
-        case "float8":
-        case "int2":
-        case "int4":
-        case "int8":
-        case "numeric":
-          $valueType = ValueType::NUMBER;
-          break;
-        case "time":
-        case "timetz":
-          $valueType = ValueType::TIMEOFDAY;
-          break;
-        case "abstime":
-        case "timestamp":
-        case "timestamptz":
-          $valueType = ValueType::DATETIME;
-          break;
-        case "date":
+        case "DATE":
           $valueType = ValueType::DATE;
           break;
-        case "bpchar":
-        case "cidr":
-        case "inet":
-        case "macaddr":
-        case "money":
-        case "text":
-        case "varbit":
-        case "varchar":
-        case "xml":
-          $valueType = ValueType::TEXT;
+        case "DATETIME":
+          $valueType = ValueType::DATETIME;
           break;
-        case "bit":
-        case "bool":
+        case "BOOLEAN":
           $valueType = ValueType::BOOLEAN;
           break;
         default:
-          throw new TypeMismatchException("PostgreSQL data type '" . $metaData["native_type"] . "' cannot be matched to a ValueType");
+          switch ($metaData["native_type"])
+          {
+            case "double":
+            case "integer":
+              $valueType = ValueType::NUMBER;
+              break;
+            case "string":
+              $valueType = ValueType::TEXT;
+              break;
+            default:
+              throw new TypeMismatchException("SQLite data type '" . $metaData["native_type"] . "' cannot be matched to a ValueType");
+          }
       }
       return $valueType;
     }
 
     protected static function validateDriver($driver)
     {
-      return $driver == "pgsql";
+      return $driver == "sqlite";
     }
   }
 ?>
