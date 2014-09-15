@@ -17,7 +17,7 @@ Features
 - Additional query language functions (MySQL syntax):
     - ABS (absolute value)
     - CONCAT (concatenate strings)
-    - CONCAT_WS (MySQL only, concatenate strings with separator)
+    - CONCAT_WS (concatenate strings with separator)
     - LEFT (left-most characters of a string)
     - RIGHT (right-most characters of a string)
     - ROUND (round to a digit of precision)
