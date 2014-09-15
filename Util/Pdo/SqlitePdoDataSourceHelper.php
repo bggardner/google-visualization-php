@@ -305,6 +305,14 @@
         case "Concatenation":
           $operator = "||";
           break;
+       	case "ConcatenationWithSeparator":
+          $colIds = array();
+          foreach ($col->getColumns() as $i => $column)
+          {
+            if ($i == 0) { $separator = self::getColumnId($column); continue; }
+            $colIds[] = self::getColumnId($column);
+          }
+          return implode(" || " . $separator . " || ", $colIds);
         case "CurrentDateTime":
           $columnId = "NOW";
           break;
@@ -360,7 +368,7 @@
           $columnId = "UPPER";
           break;
         case "Constant":
-          return $scalarFunction->getFunctionName();
+          return str_replace('"', "'", $scalarFunction->getFunctionName());
         case "Difference":
           $operator = "-";
           break;
