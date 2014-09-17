@@ -52,7 +52,7 @@
   class QueryParser
   {
     const DATE_FORMAT = "[0-9]{4}-[0-9]{2}-[0-9]{2}";
-    const NOT_BACK_QUOTED = "(?:[^`]*`[^`]*`)*[^`]$";
+    const NOT_BACK_QUOTED = "(?=(?:[^`]*`[^`]*`)*[^`]*$)";
     const NAMED_SCALAR_FUNCTIONS_REGEXP = "/(year)|(month)|(day)|(hour)|(minute)|(second)|(millisecond)|(quarter)|(dayOfWeek)|(now)|(dateDiff)|(toDate)|(upper)|(lower)|(concat)|(concat_ws)|(abs)|(round)|(right)|(left)$/i";
     const TIME_FORMAT = "[0-9]{2}:[0-9]{2}:[0-9]{2}(?:.[0-9]{0-3})?";
     const COMPARISON_REGEXP = "(<=)|(?:(<)[^=>])|(?:[^<](>)[^=])|(>=)|(?:[^!<>](=))|(!=)|(<>)|(?:\s+(?:(contains)|(starts with)|(ends with)|(matches)|(like))\s+)";
@@ -637,12 +637,8 @@
       {
         return self::parseColumn($newArg);
       }
-      if (preg_match("/^`(.+)`$/", $arg, $matches)) // Back-quoted identifier
+      if (preg_match("/^`([^`]+)`$/", $arg, $matches)) // Back-quoted identifier
       {
-        if (strpos($matches[1], "`") !== FALSE)
-        {
-          throw new InvalidQueryException("Nested back quotes are not allowed");
-        }
         if ($matches[1] == "")
         {
           throw new InvalidQueryException("Column name is required.");
