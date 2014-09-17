@@ -1,46 +1,52 @@
 Google Visualization Data Source for PHP
 ========================================
 
-This is a near literal translation of [google-visualization-java](https://code.google.com/p/google-visualization-java/source/browse/trunk/src/main/java/com/google/visualization/datasource/) into PHP.  However, the QueryParser class was written from scratch.  Thorough testing has not been performed, so bug reports are encouraged.  Enjoy!
+This is a near literal translation of [google-visualization-java](https://code.google.com/p/google-visualization-java/source/browse/trunk/src/main/java/com/google/visualization/datasource/) into PHP.
+However, the QueryParser class was written from scratch.
+While its main purpose is to generate data formatted for Google Charts, it can also be used as an abstraction layer for accessing data from a variety of sources using a SQL-like query.
+Thorough testing has not been performed, so bug reports are encouraged.  Enjoy!
 
 
 Features
 --------
 
 - A PHP implementation of the [Google Chart Tools Datasource Protocol](https://developers.google.com/chart/interactive/docs/dev/implementing_data_source)
-- Parses a [Google Visualization Query](https://developers.google.com/chart/interactive/docs/querylanguage)
+- Parses a [Google Visualization Query](https://developers.google.com/chart/interactive/docs/querylanguage) into a PHP object
 - Executes the query on an existing DataTable or retrieves one using Helper classes:
     - PDO Helper abstract class with extensions that perform automatic type casting:
-        - MySQL
         - PostgreSQL
+        - MS SQL Server / SQL Azure
+        - MySQL
         - SQLite
-- Additional query language functions (MySQL syntax):
-    - ABS (absolute value)
+- Outputs the result in the requested format (JSON, JSONP, HTML, or CSV)
+- Complete support of the [Google Visualization Query Language](https://developers.google.com/chart/interactive/docs/querylanguage), with some additional functions (that use MySQL syntax):
+    - ABS (absolute value of a number)
     - CONCAT (concatenate strings)
     - CONCAT_WS (concatenate strings with separator)
     - LEFT (left-most characters of a string)
     - RIGHT (right-most characters of a string)
-    - ROUND (round to a digit of precision)
+    - ROUND (round a number to a digit of precision)
 
 
 Dependencies
 ------------
 
 - PHP 5.4+ (maybe 5.3)
+    - intl extension
 
 
 Usage
 -----
 
 The usage is nearly similar to that of the [java library](https://developers.google.com/chart/interactive/docs/dev/dsl_about) (see that further usage help).
-- Include all the files in the path or use an autoloader such as [AutoloadByNamespace-php](https://github.com/bggardner/AutoloadByNamespace-php).
+- Include all the files in the path or use an autoloader, such as [AutoloadByNamespace-php](https://github.com/bggardner/AutoloadByNamespace-php).
 - For usage with Google Charts:
     - Create a class that extends the DataSource class
     - Instantiate the class in a file that accepts the HTTP GET request from the Google Chart
-- Useful stand-alone functions:
-    - Use DataSourceHelper::parseQuery() to generate a Query object from a string
-    - Use MySqlPdoDataSourceHelper::executeQuery() to retrieve a DataTable from a MySQL database
-    - Use DataSourceHelper::applyQuery() to apply a query to an existing DataTable
+- Useful stand-alone functions if using as an abstraction layer:
+    - DataSourceHelper::parseQuery($string) - Returns a Query object from $string
+    - MySqlPdoDataSourceHelper::executeQuery(Query $query, PDO $pdo, $tableNmae) - Returns a DataTable object by applying the query to a MySQL table 
+    - DataSourceHelper::applyQuery(Query $query, DataTable $dataTable, $locale) - Returns a DataTable object by applying the query to a DataTable
 
 
 Examples
@@ -62,20 +68,20 @@ Query a table named "mytable" from a SQL database, using AutoloadByNamespace:
         public function generateDataTable(Google\Visualization\DataSource\Query\Query $query)
         {
           // MySQL
-          $pdo = new PDO('mysql:host=xxx;port=xxx;dbname=xxx', 'username', 'password');
+          $pdo = new PDO("mysql:host=xxx;port=xxx;dbname=xxx", "username", "password");
           return Google\Visualization\DataSource\Util\Pdo\MysqlPdoDataSourceHelper::executeQuery($query, $pdo, "mytable");
 
-          /*
-          // PostgreSQL
-          $pdo = new PDO('pgsql:host=xxx;port=xxx;dbname=xxx', 'username', 'password');
-          return Google\Visualization\DataSource\Util\Pdo\PostgresqlPdoDataSourceHelper::executeQuery($query, $pdo, "mytable");
-          */
+          // MS SQL Server / SQL Azure
+          $pdo = new PDO("sqlsrv:Server=xxx;Database=xxx", "username", "password");
+          return Google\Visualization\DataSource\Util\Pdo\MssqlserverPdoDataSourceHelper::executeQuery($query, $pdo, "mytable");
 
-          /*
+          // PostgreSQL
+          $pdo = new PDO("pgsql:host=xxx;port=xxx;dbname=xxx", "username", "password");
+          return Google\Visualization\DataSource\Util\Pdo\PostgresqlPdoDataSourceHelper::executeQuery($query, $pdo, "mytable");
+
           // SQLite
-          $pdo = new PDO('sqlite:/path/to/xxx.db');
+          $pdo = new PDO("sqlite:/path/to/xxx.db");
           return Google\Visualization\DataSource\Util\Pdo\SqlitePdoDataSourceHelper::executeQuery($query, $pdo, "mytable");
-          */
         }
 
         public function isRestrictedAccessMode() { return FALSE; }
