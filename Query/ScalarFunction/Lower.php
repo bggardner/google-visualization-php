@@ -1,6 +1,7 @@
 <?php
   namespace Google\Visualization\DataSource\Query\ScalarFunction;
 
+  use Google\Visualization\DataSource\DataTable\Value\TextValue;
   use Google\Visualization\DataSource\DataTable\Value\ValueType;
 
   class Lower implements ScalarFunction

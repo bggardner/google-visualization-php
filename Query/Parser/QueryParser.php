@@ -53,7 +53,8 @@
   {
     const DATE_FORMAT = "[0-9]{4}-[0-9]{2}-[0-9]{2}";
     const NOT_BACK_QUOTED = "(?=(?:[^`]*`[^`]*`)*[^`]*$)";
-    const NAMED_SCALAR_FUNCTIONS_REGEXP = "/(year)|(month)|(day)|(hour)|(minute)|(second)|(millisecond)|(quarter)|(dayOfWeek)|(now)|(dateDiff)|(toDate)|(upper)|(lower)|(concat)|(concat_ws)|(abs)|(round)|(right)|(left)$/i";
+    const NAMED_SCALAR_FUNCTIONS_REGEXP = "(year)|(month)|(day)|(hour)|(minute)|(second)|(millisecond)|(quarter)|(dayOfWeek)|(now)|(dateDiff)|(toDate)|(upper)|(lower)|(concat)|(concat_ws)|(abs)|(round)|(right)|(left)";
+    const AGGREGATION_FUNCTIONS_REGEXP = "(count)|(sum)|(min)|(max)|(avg)";
     const TIME_FORMAT = "[0-9]{2}:[0-9]{2}:[0-9]{2}(?:.[0-9]{0-3})?";
     const COMPARISON_REGEXP = "(<=)|(?:(<)[^=>])|(?:[^<](>)[^=])|(>=)|(?:[^!<>](=))|(!=)|(<>)|(?:\s+(?:(contains)|(starts with)|(ends with)|(matches)|(like))\s+)";
     const UNQUOTED_LOOKAHEAD = "(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)(?=(?:[^']*'[^']*')*[^']*$)";
@@ -132,7 +133,7 @@
         {
           throw new InvalidQueryException("Unmatched parenthesis in WHERE clause");
         }
-        if ($c == "(" && preg_match(self::NAMED_SCALAR_FUNCTIONS_REGEXP, $innerExp))
+        if ($c == "(" && preg_match("/" . self::AGGREGATION_FUNCTIONS_REGEXP . "|" . self::NAMED_SCALAR_FUNCTIONS_REGEXP . "$/i", $innerExp))
         {
           $sfCount++;
         }
@@ -644,7 +645,7 @@
           throw new InvalidQueryException("Column name is required.");
         }
         $column = new SimpleColumn($matches[1]);
-      } else if (preg_match("/[^,]\s*[\+\-\*\/%]" . self::UNQUOTED_LOOKAHEAD . "/", $arg)) // Arithmetic expression
+      } else if (preg_match("/^[^\(]+\s*[\+\-\*\/%]" . self::UNQUOTED_LOOKAHEAD . "/", $arg)) // Arithmetic expression not enclosed in a function
       {
         $operators = self::getOuterOperators($arg);
         if (preg_match("/[\*\/%]/", implode("", $operators))) // Multiply, divide, or modulo
@@ -654,8 +655,7 @@
         {
           $column = self::parseArithmeticColumn($arg, "/[\+\-]/");
         }
-      }
-      else if (preg_match(self::VALUE_PATTERN, $arg, $matches)) // Constant
+      } else if (preg_match(self::VALUE_PATTERN, $arg, $matches)) // Constant
       {
         $matches = array_values(array_filter($matches, "strlen"));
         $column = new ScalarFunctionColumn(array(), new Constant(self::parseValue($matches[1])));
@@ -666,8 +666,9 @@
           throw new InvalidQueryException("Column name is required.");
         }
         $column = new SimpleColumn($arg);
-      } else // Aggregation or Scalar Function
+      } else if (preg_match("/^" . self::AGGREGATION_FUNCTIONS_REGEXP . "|" . self::NAMED_SCALAR_FUNCTIONS_REGEXP . "\\([^)]*\\)" . self::UNQUOTED_LOOKAHEAD . "/i", $arg)) // Named function
       {
+        $parenPos = strpos($arg, "(");
         $colFunc = strtoupper(substr($arg, 0, $parenPos));
         $colFuncArgs = substr($arg, $parenPos + 1, strrpos($arg, ")") - $parenPos - 1);
         $colFuncArgs = self::splitArguments($colFuncArgs);
@@ -678,13 +679,14 @@
           {
             throw new InvalidQueryException("Aggregation functions can only contain one column");
           }
-          $aggregatedColumn = preg_replace("/\s*`?([^`]+)`?\s*/", "$1", $colFuncArgs[0]);
-          if ($aggregatedColumn == "")
+          $aggregatedColumn = self::parseColumn($colFuncArgs[0]);
+          if (!($aggregatedColumn instanceof SimpleColumn))
           {
-            throw new InvalidQueryException("The " . $colFunc . "() requires one argument.");
+            throw new InvalidQueryException($colFunc . "() does not support expressions.  Only column names can be used.");
           }
-          $column = new AggregationColumn(new SimpleColumn($aggregatedColumn), constant($aggTypeString));
-        } else // Scalar Function
+          $aggregatedColumn = new SimpleColumn($aggregatedColumn);
+          $column = new AggregationColumn($aggregatedColumn, constant($aggTypeString));
+        } else // Scalar or uknown function
         {
           switch ($colFunc)
           {
@@ -733,7 +735,7 @@
               $scalarFunction = new Left();
               break;
             default:
-              throw new InvalidQueryException("Invalid column function " . $colFunc);
+              throw new InvalidQueryException("Unknown column function " . $colFunc);
           }
           $columns = array();
           foreach ($colFuncArgs as $arg)
@@ -742,6 +744,9 @@
           }
           $column = new ScalarFunctionColumn($columns, $scalarFunction);
         }
+      } else
+      {
+        throw new InvalidQueryException("Unrecognized expression: " . $arg);
       }
       return $column;
     }
