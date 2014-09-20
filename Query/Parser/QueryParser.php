@@ -684,7 +684,6 @@
           {
             throw new InvalidQueryException($colFunc . "() does not support expressions.  Only column names can be used.");
           }
-          $aggregatedColumn = new SimpleColumn($aggregatedColumn);
           $column = new AggregationColumn($aggregatedColumn, constant($aggTypeString));
         } else // Scalar or uknown function
         {

@@ -273,7 +273,7 @@ SELECT * FROM
         $columnId = "`" . $abstractColumn->getId() . "`";
       } else if ($abstractColumn instanceof AggregationColumn)
       {
-        $columnId = self::getAggregationFunction($abstractColumn->getAggregationType()) . "(`" . $abstractColumn->getAggregatedColumn() . "`)";
+        $columnId = self::getAggregationFunction($abstractColumn->getAggregationType()) . "(" . self::getColumnId($abstractColumn->getAggregatedColumn()) . ")";
       } else
       {
         $columnId = self::getScalarFunction($abstractColumn);
