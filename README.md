@@ -98,7 +98,7 @@ Query a CSV file (with known column order and data types), using spl_autoload_re
 <?php
   spl_autoload_register(function($class) {
     $class = str_replace('Google\\Visualization\\DataSource\\', '', $class);
-    include '/path/to/google-visualization-php/' . str_replace('\\', DIRECTORY_SEPARATOR, $class) . '.php';
+    require_once '/path/to/google-visualization-php/' . str_replace('\\', DIRECTORY_SEPARATOR, $class) . '.php';
   });
 
   class MyDataSource extends Google\Visualization\DataSource\DataSource
