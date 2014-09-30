@@ -20,10 +20,8 @@
   use Google\Visualization\DataSource\Query\Query;
   use Google\Visualization\DataSource\Query\QuerySelection;
 
-  abstract class PdoDataSourceHelper
+  abstract class PdoDataSourceHelper implements PdoDataSourceHelperInterface
   {
-    abstract protected static function validateDriver($driver);
-
     public static function executeQuery(Query $query, PDO $db, $tableName)
     {
       if (!static::validateDriver($driver = $db->getAttribute(PDO::ATTR_DRIVER_NAME)))

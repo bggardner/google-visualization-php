@@ -461,7 +461,7 @@ SELECT * FROM
       return $valueType;
     }
 
-    protected static function validateDriver($driver)
+    public static function validateDriver($driver)
     {
       return $driver == "mysql";
     }

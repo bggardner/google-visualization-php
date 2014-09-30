@@ -60,7 +60,7 @@ Query a table named "mytable" from a SQL database, using AutoloadByNamespace:
   // Required to autoload the Google\Visualization\DataSource classes
   require_once "/path/to/AutoloadByNamespace.php";
   spl_autoload_register("AutoloadByNamespace::autoload");
-  AutoloadByNamespace::register("Google", "/path/to/Google");
+  AutoloadByNamespace::register("Google\Visualization\DataSource", "/path/to/google-visualization-php");
 
   // The custom class that defines how the data is generated
   class MyDataSource extends Google\Visualization\DataSource\DataSource

@@ -455,7 +455,7 @@
       return $valueType;
     }
 
-    protected static function validateDriver($driver)
+    public static function validateDriver($driver)
     {
       return $driver == "sqlsrv";
     }
