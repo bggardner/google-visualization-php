@@ -8,9 +8,9 @@
 
     public function __construct($reasonType, $messageToUser)
     {
-      parent::__construct($messageToUser);
       $this->messageToUser = $messageToUser;
       $this->reasonType = $reasonType;
+      parent::__construct($messageToUser);
     }
 
     public function getMessageToUser()

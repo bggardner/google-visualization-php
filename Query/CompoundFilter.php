@@ -21,7 +21,7 @@
       {
         if (!($subFilter instanceof QueryFilter))
         {
-          throw new RuntimeException("Compound filter subFilter is not of type QueryFilter");
+          throw new RuntimeException("Compound filter subfilter is not of type QueryFilter");
         }
       }
       $this->subFilters = $subFilters;
@@ -29,10 +29,9 @@
 
     public function isMatch(DataTable $table, TableRow $row)
     {
-static $a = 0;
       if (!count($this->subFilters))
       {
-        throw new RuntimeException("Compound filter with empty subFilters array");
+        throw new RuntimeException("Compound filter has no subfilters");
       }
       foreach ($this->subFilters as $subFilter)
       {
