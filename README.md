@@ -46,7 +46,9 @@ Installation
 
 1. Clone/extract repository.
 2. Use the ICU tool `genrb` to compile each `*.txt` file in `Base\ErrorMessages`
-    - `user@localhost:google-visualization-php/Base/ErrorMessages# genrb root.txt` will generate `root.res`
+    - This will compile `root.txt` into `root.res` (default locale resource bundle):
+
+`user@localhost [/path/to/google-visualization-php/Base/ErrorMessages]# genrb root.txt`
 
 
 Usage
