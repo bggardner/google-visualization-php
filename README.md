@@ -2,7 +2,7 @@ Google Visualization Data Source for PHP
 ========================================
 
 This is a near literal translation of [google-visualization-java](https://code.google.com/p/google-visualization-java/source/browse/trunk/src/main/java/com/google/visualization/datasource/) into PHP.
-However, the QueryParser class was written from scratch.
+The `QueryParser` class was not translated, but written from scratch.
 While its main purpose is to generate data formatted for Google Charts, it can also be used as an abstraction layer for accessing data from a variety of sources using a SQL-like query.
 Thorough testing has not been performed, so bug reports are encouraged.  Enjoy!
 
@@ -12,7 +12,7 @@ Features
 
 - A PHP implementation of the [Google Chart Tools Datasource Protocol](https://developers.google.com/chart/interactive/docs/dev/implementing_data_source) (V0.6)
 - Parses a [Google Visualization Query](https://developers.google.com/chart/interactive/docs/querylanguage) into a PHP object
-- Executes the query on an existing DataTable or retrieves one from a database using a DataSourceHelper class, which performs automatic type casting:
+- Executes the query on an existing `DataTable` or retrieves one from a database using a `Util\xxxDataSourceHelper` class, which performs automatic type casting:
     - PDO:
         - PostgreSQL
         - MS SQL Server / SQL Azure
@@ -21,8 +21,8 @@ Features
     - MySQLi
 - Outputs the result in the requested format (JSON, JSONP, HTML, or CSV)
 - Complete support of the [Google Visualization Query Language](https://developers.google.com/chart/interactive/docs/querylanguage) (V0.7), with some additional functions:
-    - ABS(*number*) - absolute value
-    - CONCAT(*string1*, *string2*, *&hellip;*) - concatenate strings
+    - `ABS(*number*)` - absolute value
+    - `CONCAT(string1, string2, ...)` - concatenate strings
     - CONCAT_WS(*separator*, *string1*, *string2*, *&hellip;*) - concatenate strings with separator
     - LEFT(*string*, *length*) - left-most characters of a string
     - RIGHT(*string*, *length*) - right-most characters of a string
@@ -34,9 +34,9 @@ Dependencies
 
 - PHP 5.3+ (tested on 5.3.29 &amp; 5.4.32)
     - intl extension
-    - PDO extension (optional, required for PdoDataSourceHelper classes)
+    - PDO extension (optional, required for `Util\PdoDataSourceHelper` classes)
         - PDO database-specific driver extensions (required for each driver you need to use)
-    - mysqli extension (optional, required for MysqliDataSourceHelper class)
+    - mysqli extension (optional, required for `Util\MysqliDataSourceHelper` class)
 
 Usage
 -----
@@ -47,15 +47,15 @@ The usage is nearly similar to that of the [java library](https://developers.goo
     - Create a class that extends the DataSource class
     - Instantiate the class in a file that accepts the HTTP GET request from the Google Chart
 - Useful stand-alone functions if using as an abstraction layer:
-    - DataSourceHelper::parseQuery($string) - Returns a Query object from $string
-    - MySqlPdoDataSourceHelper::executeQuery(Query $query, PDO $pdo, $tableNmae) - Returns a DataTable object by applying the query to a MySQL table 
-    - DataSourceHelper::applyQuery(Query $query, DataTable $dataTable, $locale) - Returns a DataTable object by applying the query to a DataTable
+    - `DataSourceHelper::parseQuery($string)` - Returns a Query object from $string
+    - `MySqlPdoDataSourceHelper::executeQuery(Query $query, PDO $pdo, $tableNmae)` - Returns a DataTable object by applying the query to a MySQL table 
+    - `DataSourceHelper::applyQuery(Query $query, DataTable $dataTable, $locale)` - Returns a DataTable object by applying the query to a DataTable
 
 
 Examples
 --------
 
-Query a table named "mytable" from a SQL database, using AutoloadByNamespace:
+Query a table named "mytable" from a SQL database, using `AutoloadByNamespace`:
 ```php
 <?php
   // Required to autoload the Google\Visualization\DataSource classes
