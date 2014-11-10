@@ -79,7 +79,7 @@
     protected function createQueryFromRequest()
     {
       $queryString = isset($_REQUEST[self::QUERY_REQUEST_PARAMETER]) ? $_REQUEST[self::QUERY_REQUEST_PARAMETER] : "";
-      $this->query = DataSourceHelper::parseQuery($queryString);
+      $this->query = DataSourceHelper::parseQuery($queryString, $this->userLocale);
       return $this;
     }
 
