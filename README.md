@@ -85,6 +85,10 @@ Query a table named "mytable" from a SQL database, using AutoloadByNamespace:
       // SQLite
       $pdo = new PDO("sqlite:/path/to/xxx.db");
       return Google\Visualization\DataSource\Util\Pdo\SqlitePdoDataSourceHelper::executeQuery($query, $pdo, "mytable");
+
+      // MySQLi
+      $db = new mysqli("host", "username", "password");
+      return Google\Visualization\DataSource\Util\MysqliDataSourceHelper::executeQuery($query, $db, "mytable");
     }
 
     public function isRestrictedAccessMode() { return FALSE; }

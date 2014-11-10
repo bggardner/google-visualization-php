@@ -51,11 +51,14 @@
 
       try
       {
-        $stmt = $db->query($queryString);
+        if (($result = $db->query($queryString)) === FALSE)
+        {
+          throw new mysqli_sql_exception($db->error);
+        }
         return self::buildTable($stmt, $columnIdsList);
       } catch (mysqli_sql_exception $e)
       {
-        $messageToUser = "Failed to execute SQL query. SQL error message: " . $e->getMessage();
+        $messageToUser = "Failed to execute MySQL query. MySQL error message: " . $e->getMessage();
         throw new DataSourceException(ReasonType::INTERNAL_ERROR, $messageToUser);
       }
     }
