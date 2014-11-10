@@ -10,7 +10,7 @@ Thorough testing has not been performed, so bug reports are encouraged.  Enjoy!
 Features
 --------
 
-- A PHP implementation of the [Google Chart Tools Datasource Protocol](https://developers.google.com/chart/interactive/docs/dev/implementing_data_source)
+- A PHP implementation of the [Google Chart Tools Datasource Protocol](https://developers.google.com/chart/interactive/docs/dev/implementing_data_source) (V0.6)
 - Parses a [Google Visualization Query](https://developers.google.com/chart/interactive/docs/querylanguage) into a PHP object
 - Executes the query on an existing DataTable or retrieves one using Helper classes:
     - PDO Helper abstract class with extensions that perform automatic type casting:
@@ -19,22 +19,22 @@ Features
         - MySQL
         - SQLite
 - Outputs the result in the requested format (JSON, JSONP, HTML, or CSV)
-- Complete support of the [Google Visualization Query Language](https://developers.google.com/chart/interactive/docs/querylanguage), with some additional functions (that use MySQL syntax):
-    - ABS (absolute value of a number)
-    - CONCAT (concatenate strings)
-    - CONCAT_WS (concatenate strings with separator)
-    - LEFT (left-most characters of a string)
-    - RIGHT (right-most characters of a string)
-    - ROUND (round a number to a digit of precision)
+- Complete support of the [Google Visualization Query Language](https://developers.google.com/chart/interactive/docs/querylanguage) (V0.7), with some additional functions:
+    - ABS(*number*) - absolute value
+    - CONCAT(*string1*, *string2*, *&hellip;*) - concatenate strings
+    - CONCAT_WS(*separator*, *string1*, *string2*, *&hellip;*) - concatenate strings with separator
+    - LEFT(*string*, *length*) - left-most characters of a string
+    - RIGHT(*string*, *length*) - right-most characters of a string
+    - ROUND(*number*, *precision*) - round a number to a digit of precision
 
 
 Dependencies
 ------------
 
 - PHP 5.4+ (maybe 5.3)
-    - intl extension (for error messages)
-    - PDO extension (for PDO support)
-        - Database driver extensions (for each driver you need to use)
+    - intl extension
+    - PDO extension (optional, required for PDO Helper classes)
+        - Database driver extensions (required for each driver you need to use)
 
 
 Usage
@@ -117,7 +117,6 @@ Query a CSV file (with known column order and data types), using spl_autoload_re
       $dataTable->addColumns($columnDescriptions);
 
       // Populate the DataTable
-      $i = 0;
       $fh = fopen('data.csv', 'r');
       while (($data = fgetcsv($fh)) !== FALSE)
       {
