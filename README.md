@@ -12,12 +12,13 @@ Features
 
 - A PHP implementation of the [Google Chart Tools Datasource Protocol](https://developers.google.com/chart/interactive/docs/dev/implementing_data_source) (V0.6)
 - Parses a [Google Visualization Query](https://developers.google.com/chart/interactive/docs/querylanguage) into a PHP object
-- Executes the query on an existing DataTable or retrieves one using Helper classes:
-    - PDO Helper abstract class with extensions that perform automatic type casting:
+- Executes the query on an existing DataTable or retrieves one from a database using a DataSourceHelper class, which performs automatic type casting:
+    - PDO:
         - PostgreSQL
         - MS SQL Server / SQL Azure
         - MySQL
         - SQLite
+    - MySQLi
 - Outputs the result in the requested format (JSON, JSONP, HTML, or CSV)
 - Complete support of the [Google Visualization Query Language](https://developers.google.com/chart/interactive/docs/querylanguage) (V0.7), with some additional functions:
     - ABS(*number*) - absolute value
@@ -31,11 +32,11 @@ Features
 Dependencies
 ------------
 
-- PHP 5.4+ (maybe 5.3)
+- PHP 5.3+ (tested on 5.3.29 &amp; 5.4.32)
     - intl extension
-    - PDO extension (optional, required for PDO Helper classes)
-        - Database driver extensions (required for each driver you need to use)
-
+    - PDO extension (optional, required for PdoDataSourceHelper classes)
+        - PDO database-specific driver extensions (required for each driver you need to use)
+    - mysqli extension (optional, required for MysqliDataSourceHelper class)
 
 Usage
 -----

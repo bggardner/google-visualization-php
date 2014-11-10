@@ -66,11 +66,11 @@
         case AggregationType::SUM:
           if ($valueType != ValueType::NUMBER)
           {
-            throw new InvalidQueryException(MessagesEnum::getMessage(MessagesEnum::AVG_SUM_ONLY_NUMERIC, $dataTable->getLocaleForUserMessages());
+            throw new InvalidQueryException(MessagesEnum::getMessage(MessagesEnum::AVG_SUM_ONLY_NUMERIC, $dataTable->getLocaleForUserMessages()));
           }
           break;
         default:
-          throw new RuntimeException(MessagesEnum::getMessageWithArgs(MessagesEnum::INVALID_AGG_TYPE, $dataTable->getLocaleForUserMessages, $aggregationType);
+          throw new RuntimeException(MessagesEnum::getMessageWithArgs(MessagesEnum::INVALID_AGG_TYPE, $dataTable->getLocaleForUserMessages(), $aggregationType));
       }
       return $this;
     }
