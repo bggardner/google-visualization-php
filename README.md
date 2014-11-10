@@ -21,12 +21,12 @@ Features
     - MySQLi
 - Outputs the result in the requested format (JSON, JSONP, HTML, or CSV)
 - Complete support of the [Google Visualization Query Language](https://developers.google.com/chart/interactive/docs/querylanguage) (V0.7), with some additional functions:
-    - `ABS(*number*)` - absolute value
+    - `ABS(number)` - absolute value
     - `CONCAT(string1, string2, ...)` - concatenate strings
-    - CONCAT_WS(*separator*, *string1*, *string2*, *&hellip;*) - concatenate strings with separator
-    - LEFT(*string*, *length*) - left-most characters of a string
-    - RIGHT(*string*, *length*) - right-most characters of a string
-    - ROUND(*number*, *precision*) - round a number to a digit of precision
+    - `CONCAT_WS(separator, string1, string2, ...)` - concatenate strings with separator
+    - `LEFT(string, length)` - left-most characters of a string
+    - `RIGHT(string, length)` - right-most characters of a string
+    - `ROUND(number, precision)` - round a number to a digit of precision
 
 
 Dependencies
@@ -37,6 +37,17 @@ Dependencies
     - PDO extension (optional, required for `Util\PdoDataSourceHelper` classes)
         - PDO database-specific driver extensions (required for each driver you need to use)
     - mysqli extension (optional, required for `Util\MysqliDataSourceHelper` class)
+- ICU (to compile resource bundles)
+    - See the [ICU ReadMe](http://source.icu-project.org/repos/icu/icu/trunk/readme.html) if `genrb` is not installed on your system
+
+
+Installation
+------------
+
+1. Clone/extract repository.
+2. Use the ICU tool `genrb` to compile each `*.txt` file in `Base\ErrorMessages`
+    - `user@localhost:google-visualization-php/Base/ErrorMessages# genrb root.txt` will generate `root.res`
+
 
 Usage
 -----
@@ -44,12 +55,12 @@ Usage
 The usage is nearly similar to that of the [java library](https://developers.google.com/chart/interactive/docs/dev/dsl_about) (see that further usage help).
 - Include all the files in the path or use an autoloader, such as [AutoloadByNamespace-php](https://github.com/bggardner/AutoloadByNamespace-php).
 - For usage with Google Charts:
-    - Create a class that extends the DataSource class
+    - Create a class that extends the `DataSource` class
     - Instantiate the class in a file that accepts the HTTP GET request from the Google Chart
 - Useful stand-alone functions if using as an abstraction layer:
-    - `DataSourceHelper::parseQuery($string)` - Returns a Query object from $string
-    - `MySqlPdoDataSourceHelper::executeQuery(Query $query, PDO $pdo, $tableNmae)` - Returns a DataTable object by applying the query to a MySQL table 
-    - `DataSourceHelper::applyQuery(Query $query, DataTable $dataTable, $locale)` - Returns a DataTable object by applying the query to a DataTable
+    - `DataSourceHelper::parseQuery($string)` - Returns a `Query` object from $string
+    - `Util\Pdo\MySqlPdoDataSourceHelper::executeQuery(Query $query, PDO $pdo, $tableNmae)` - Returns a `DataTable` object by applying the query to a MySQL table 
+    - `DataSourceHelper::applyQuery(Query $query, DataTable $dataTable, $locale)` - Returns a `DataTable` object by applying the query to an exsiting `DataTable`
 
 
 Examples

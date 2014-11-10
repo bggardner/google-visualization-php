@@ -31,7 +31,6 @@
       $rb = ResourceBundle::create($locale, $bundleName , TRUE);
       if (!($rb instanceof ResourceBundle))
       {
-        $rb = ResourceBundle::create($locale, NULL , TRUE);
         $messageToUser = "Server Error: ResourceBundle could not be created (" . intl_error_name(intl_get_error_code()) . ").";
         return $messageToUser;
       }
