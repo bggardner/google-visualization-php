@@ -29,6 +29,7 @@
       {
         $this->columnAggregators->get($columnId)->aggregate($valuesByColumn->get($columnId));
       }
+      return $this;
     }
 
     public function getAggregationValue($columnId, $type)
@@ -66,6 +67,7 @@
       $node->parent = $this;
       $node->value = $key;
       $this->children->put($key, $node);
+      return $this;
     }
 
     public function getChildren()

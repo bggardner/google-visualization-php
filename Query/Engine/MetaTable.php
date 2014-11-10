@@ -22,6 +22,7 @@
         $this->data->put($rowTitle, $rowData);
       }
       $rowData->put($columnTitle, $cell);
+      return $this;
     }
 
     public function getRow(RowTitle $rowTitle)

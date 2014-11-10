@@ -38,6 +38,7 @@
       {
         throw new InvalidQueryException("Can't perform the function 'dateDiff' on values that are not a Date or DateTime values");
       }
+      return $this;
     }
 
     protected function isDateOrDateTimeValue($type)

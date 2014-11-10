@@ -33,6 +33,7 @@
       {
         throw new InvalidQueryException("The constant function should not get any parameters");
       }
+      return $this;
     }
 
     public function toQueryString($argumentsQueryStrings)

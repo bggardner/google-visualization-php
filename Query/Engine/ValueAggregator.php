@@ -41,6 +41,7 @@
       {
         $this->min = $this->max = $value;
       }
+      return $this;
     }
 
     protected function getSum()

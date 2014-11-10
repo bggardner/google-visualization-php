@@ -13,6 +13,7 @@
     public function addColumn(AbstractColumn $column)
     {
       $this->columns[] = $column;
+      return $this;
     }
 
     public function getColumnIds()

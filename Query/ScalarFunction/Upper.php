@@ -33,6 +33,7 @@
       {
         throw new InvalidQueryException(self::FUNCTION_NAME . " takes a text paramter");
       }
+      return $this;
     }
 
     public function toQueryString($argumentsQueryStrings)

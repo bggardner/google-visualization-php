@@ -18,6 +18,7 @@
     {
       $this->columns[] = $col;
       $this->indices[] = $index;
+      return $this;
     }
 
     public function getColumnIndices(AbstractColumn $col)
@@ -34,6 +35,7 @@
     {
       $this->columns = array();
       $this->indices = array();
+      return $this;
     }
   }
 ?>

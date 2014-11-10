@@ -41,6 +41,7 @@
           throw new InvalidQueryException("Can't perform the function " . self::FUNCTION_NAME . " on values that are not numbers");
         }
       }
+      return $this;
     }
 
     public function toQueryString($argumentsQueryStrings)

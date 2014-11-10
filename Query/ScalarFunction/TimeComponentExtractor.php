@@ -94,6 +94,7 @@
           }
           break;
       }
+      return $true;
     }
 
     public function toQueryString($argumentsQueryStrings)

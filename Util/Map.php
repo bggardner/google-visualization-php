@@ -15,6 +15,7 @@
     {
       $this->keys = array();
       $this->values = array();
+      return $this;
     }
 
     public function containsKey($key)
@@ -50,6 +51,7 @@
     {
       $this->keys[] = $key;
       $this->values[] = $value;
+      return $this;
     }
 
     public function remove($key)
@@ -57,6 +59,7 @@
       $i = array_search($key, $this->keys);
       array_splice($this->keys, $i, 1);
       array_splice($this->values, $i, 1);
+      return $this;
     }
 
     public function size()

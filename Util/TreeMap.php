@@ -27,6 +27,7 @@
       }
       $this->keys = array_values($this->keys);
       $this->values = $sortedValues;
+      return $this;
     }
   }
 ?>

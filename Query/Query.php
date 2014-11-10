@@ -40,6 +40,7 @@
     public function setSort(QuerySort $sort = NULL)
     {
       $this->sort = $sort;
+      return $this;
     }
 
     public function getSort()
@@ -55,6 +56,7 @@
     public function setSelection(QuerySelection $selection = NULL)
     {
       $this->selection = $selection;
+      return $this;
     }
 
     public function getSelection()
@@ -70,6 +72,7 @@
     public function setFilter(QueryFilter $filter = NULL)
     {
       $this->filter = $filter;
+      return $this;
     }
 
     public function getFilter()
@@ -85,6 +88,7 @@
     public function setGroup(QueryGroup $group = NULL)
     {
       $this->group = $group;
+      return $this;
     }
 
     public function getGroup()
@@ -100,6 +104,7 @@
     public function setPivot(QueryPivot $pivot = NULL)
     {
       $this->pivot = $pivot;
+      return $this;
     }
 
     public function getPivot()
@@ -121,16 +126,18 @@
     {
       if ($rowSkipping < 0)
       {
-        $messageToLogAndUser = MessagesEnum::INVALID_SKIPPING;
+        $messageToLogAndUser = MessagesEnum::getMessageWithArgs(MessagesEnum::INVALID_SKIPPING, $this->localeForUserMessages, $rowSkipping);
         //$log->error($messageToLogAndUser);
        throw new InvalidQueryException($messageToLogAndUser);
       }
       $this->rowSkipping = $rowSkipping;
+      return $this;
     }
 
     public function copyRowSkipping(Query $originalQuery)
     {
       $this->rowSkipping = $originalQuery->getRowSkipping();
+      return $this;
     }
 
     public function hasRowSkipping()
@@ -147,16 +154,18 @@
     {
       if ($rowLimit < -1)
       {
-        $messageToLogAndUser = "Invalid value for row limit: " . $rowLimit;
+        $messageToLogAndUser = MessagesEnum::getMessageWithArgs(MessagesEnum::INVALID_LIMIT, $this->localeForUserMessages, $rowLimit);
         //$log->error($messageToLogAndUser);
         throw new InvalidQueryException($messageToLogAndUser);
       }
       $this->rowLimit = $rowLimit;
+      return $this;
     }
 
     public function copyRowLimit(Query $originalQuery)
     {
       $this->rowLimit = $originalQuery->getRowLimit();
+      return $this;
     }
 
     public function hasRowLimit()
@@ -173,16 +182,18 @@
     {
       if ($rowOffset < 0)
       {
-        $messageToLogAndUser = MessagesEnum::INVALID_OFFSET;
+        $messageToLogAndUser = MessagesEnum::getMessageWithArgs(MessagesEnum::INVALID_OFFSET, $this->localeForUserMessages, $rowOffset);
         //$log->error($messageToLogAndUser);
         throw new InvalidQueryException($messageToLogAndUser);
       }
       $this->rowOffset = $rowOffset;
+      return $this;
     }
 
     public function copyRowOffset(Query $originalQuery)
     {
       $this->rowOffset = $originalQuery->getRowOffset();
+      return $this;
     }
 
     public function hasRowOffset()
@@ -198,6 +209,7 @@
     public function setUserFormatOptions(QueryFormat $userFormatOptions = NULL)
     {
       $this->userFormatOptions = $userFormatOptions;
+      return $this;
     }
 
     public function hasUserFormatOptions()
@@ -213,6 +225,7 @@
     public function setLabels(QueryLabels $labels = NULL)
     {
       $this->labels = $labels;
+      return $this;
     }
 
     public function hasLabels()
@@ -228,6 +241,7 @@
     public function setOptions(QueryOptions $options = NULL)
     {
       $this->options = $options;
+      return $this;
     }
 
     public function hasOptions()
@@ -245,6 +259,7 @@
     public function setLocaleForUserMessages($localeForUserMessages)
     {
       $this->localeForUserMessages = $localeForUserMessages;
+      return $this;
     }
 
     public function copyFrom(Query $query)
@@ -260,6 +275,7 @@
       $this->setUserFormatOptions($query->getUserFormatOptions());
       $this->setLabels($query->getLabels());
       $this->setOptions($query->getOptions());
+      return $this;
     }
 
     public function validate()
@@ -310,7 +326,7 @@
         $filterAggregations = $this->filter->getAggregationColumns();
         if (count($filterAggregations))
         {
-          $messageToLogAndUser = MessagesEnum::getMessageWithArgs(MessagesEnum::CANNOT_BE_IN_WHERE, $this->localeForUserMessages, $column->toQueryString());
+          $messageToLogAndUser = MessagesEnum::getMessageWithArgs(MessagesEnum::CANNOT_BE_IN_WHERE, $this->localeForUserMessages, $filterAggregations[0]->toQueryString());
           //$log->error($messageToLogAndUser);
           throw new InvalidQueryException($messageToLogAndUser);
         }
@@ -356,7 +372,101 @@
           }
         }
       }
-      // TODO
+
+      // Cannot use grouping or pivoting when no aggregations are defined in the selection
+      if ($this->hasGroup() && count($selectionAggregated) == 0)
+      {
+        $messageToLogAndUser = MessagesEnum::getMessage(MessagesEnum::CANNOT_GROUP_WITHOUT_AGG, $this->localForUserMessages);
+        //$log->error($messageToLogAndUser);
+        throw new InvalidQueryException($messageToLogAndUser);
+      }
+      if ($this->hasPivot() && count($selectionAggregated) == 0)
+      {
+        $messageToLogAndUser = MessagesEnum::getMessage(MessagesEnum::CANNOT_PIVOT_WITHOUT_AGG, $this->localForUserMessages);
+        //$log->error($messageToLogAndUser);
+        throw new InvalidQueryException($messageToLogAndUser);
+      }
+
+      // Cannot order by a column that is not in the selection when aggregations are defined
+      if ($this->hasSort() && count($selectionAggregated) > 0)
+      {
+        foreach ($this->sort->getColumns() as $column)
+        {
+          $messageToLogAndUser = MessagesEnum::getMessageWithArgs(MessagesEnum::COL_IN_ORDER_MUST_BE_IN_SELECT, $this->localeForUserMessages, $column->toQueryString());
+          $this->checkColumnInList($this->selection->getColumns(), $column, $messageToLogAndUser);
+        }
+      }
+
+      // Cannot pivot by a column that appears in an aggregation
+      if ($this->hasPivot())
+      {
+        foreach ($selectionAggregated as $column)
+        {
+          $id = $column->getAggregatedColumn()->getId();
+          if (in_array($id, $pivotColumnIds))
+          {
+            $messageToLogAndUser = MessagesEnum::getMessageWithArgs(MessagesEnum::AGG_IN_SELECT_NO_PIVOT, $this->localeForUserMessages, $id);
+            //$log->error($messageToLogAndUser);
+            throw new InvalidQueryException($messageToLogAndUser);
+          }
+        }
+      }
+
+      // Cannot have a column appear in both group by and pivot
+      if ($this->hasGroup() && $this->hasPivot())
+      {
+        foreach ($groupColumnIds as $id)
+        {
+          if (in_array($id, $pivotColumnIds))
+          {
+            $messageToLogAndUser = MessagesEnum::getMessageWithArgs(MessagesEnum::NO_COL_IN_GROUP_AND_PIVOT, $this->localeForUserMessages, $id);
+            //$log->error($messageToLogAndUser);
+            throw new InvalidQueryException($messageToLogAndUser);
+          }
+        }
+      }
+
+      // Cannot order by aggregation column when pivoting is used
+      if ($this->hasPivot() && count($sortAggregated) > 0)
+      {
+        $column = $sortAggregated[0];
+        $messageToLogAndUser = MessagesEnum::getMessageWithArgs(MessagesEnum::NO_AGG_IN_ORDER_WHEN_PIVOT, $this->localeForUserMessages, $column->getAggregatedColumn()->getId());
+        //$log->error($messageToLogAndUser);
+        throw new InvalidQueryException($messageToLogAndUser);
+      }
+
+      // Cannot order by aggregation columns that weren't defined in the selection
+      foreach ($sortAggregated as $column)
+      {
+        $messageToLogAndUser = MessagesEnum::getMessageWithArgs(MessagesEnum::AGG_IN_ORDER_NOT_IN_SELECT, $this->localeForUserMessages, $column->toQueryString());
+        $this->checkColumnInList($selectionAggregated, $column, $messageToLogAndUser);
+      }
+
+      $labelColumns = $this->hasLabels() ? $this->labels->getColumns() : array();
+      $formatColumns = $this->hasUserFormatOptions() ? $this->userFormatOptions->getColumns() : array();
+
+      if ($this->hasSelection())
+      {
+        foreach ($labelColumns as $col)
+        {
+          if (!in_array($col, $selectionColumns))
+          {
+            $messageToLogAndUser = MessagesEnum::getMessageWithArgs(MessagesEnum::LABEL_COL_NOT_IN_SELECT, $this->localeForUserMessages, $col->toQueryString());
+            //$log->error($messageToLogAndUser);
+            throw new InvalidQueryException($messageToLogAndUser);
+          }
+        }
+        foreach ($formatColumns as $col)
+        {
+          if (!in_array($col, $selectionColumns))
+          {
+            $messageToLogAndUser = MessagesEnum::getMessageWithArgs(MessagesEnum::FORMAT_COL_NOT_IN_SELECT, $this->localeForUserMessages, $col->toQueryString());
+            //$log->error($messageToLogAndUser);
+            throw new InvalidQueryException($messageToLogAndUser);
+          }
+        }
+      }
+      return $this;
     }
 
     public function getAllColumnIds()
@@ -480,6 +590,25 @@
       return $mentionedScalarFunctionsColumns;
     }
 
+    protected function checkColumnInList($columns, $column, $messageToLogAndUser)
+    {
+      if (in_array($column, $columns))
+      {
+        return;
+      } else if ($column instanceof ScalarFunctionColumn)
+      {
+        $innerColumns = $column->getColumns();
+        foreach ($innerColumns as $innerColumn)
+        {
+          $this->checkColumnInList($columns, $innerColumn, $messageToLogAndUser);
+        }
+      } else
+      {
+        //$log->error($messageToLogAndUser);
+        throw new InvalidQueryException($messageToLogAndUser);
+      }
+    }
+
     protected function checkSelectedColumnWithGrouping($groupColumns, AbstractColumn $col)
     {
       if ($col instanceof SimpleColumn)
@@ -501,6 +630,7 @@
           }
         }
       }
+      return $this;
     }
 
     public static function columnListtoQueryString($l)

@@ -22,6 +22,7 @@
       }
       $this->columns[] = $column;
       $this->columnPatterns[] = $pattern;
+      return $this;
     }
 
     public function getPattern(AbstractColumn $column)

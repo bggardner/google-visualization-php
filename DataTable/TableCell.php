@@ -28,6 +28,7 @@
     public function setFormattedValue($formattedValue)
     {
       $this->formattedValue = $formattedValue;
+      return $this;
     }
 
     public function getType()

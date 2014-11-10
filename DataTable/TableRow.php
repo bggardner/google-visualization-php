@@ -11,6 +11,7 @@
     public function addCell(TableCell $cell)
     {
       $this->cells[] = $cell;
+      return $this;
     }
 
     public function getCells()
@@ -21,6 +22,7 @@
     public function setCell($index, $cell)
     {
       $this->cells[$index] = $cell;
+      return $this;
     }
 
     public function getCell($index)

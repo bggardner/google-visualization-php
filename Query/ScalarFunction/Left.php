@@ -37,6 +37,7 @@
       {
         throw new InvalidQueryException(self::FUNCTION_NAME . " takes a numeric parameter");
       }
+      return $this;
     }
 
     public function toQueryString($argumentsQueryStrings)

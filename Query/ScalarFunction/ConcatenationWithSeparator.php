@@ -30,6 +30,7 @@
       {
         throw new InvalidQueryException("The function " . self::FUNCTION_NAME . " requires at least one parameter");
       }
+      return $this;
     }
 
     public function toQueryString($argumentsQueryStrings)

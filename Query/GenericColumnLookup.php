@@ -16,12 +16,14 @@
     {
       $this->columns = array();
       $this->indices = array();
+      return $this;
     }
 
     public function put(AbstractColumn $col, $index)
     {
       $this->columns[] = $col;
       $this->indices[] = $index;
+      return $this;
     }
 
     public function getColumnIndex(AbstractColumn $column)

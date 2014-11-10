@@ -18,6 +18,7 @@
     public function addSort(ColumnSort $columnSort)
     {
       $this->sortColumns[] = $columnSort;
+      return $this;
     }
 
     public function getSortColumns()

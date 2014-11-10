@@ -47,6 +47,7 @@
       {
         throw new InvalidQueryException("Can't perform the function 'date' on values that are not date, dateTime, or number values");
       }
+      return $this;
     }
 
     public function toQueryString($argumentsQueryStrings)

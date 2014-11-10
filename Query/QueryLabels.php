@@ -22,6 +22,7 @@
       }
       $this->columns[] = $column;
       $this->labels[] = $label;
+      return $this;
     }
 
     public function getLabel(AbstractColumn $column)

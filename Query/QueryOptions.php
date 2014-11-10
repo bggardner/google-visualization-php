@@ -15,11 +15,13 @@
     public function setNoValues($noValues)
     {
       $this->noValues = $noValues;
+      return $this;
     }
 
     public function setNoFormat($noFormat)
     {
       $this->noFormat = $noFormat;
+      return $this;
     }
 
     public function isDefault()

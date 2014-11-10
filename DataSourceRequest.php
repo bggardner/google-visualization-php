@@ -80,6 +80,7 @@
     {
       $queryString = isset($_REQUEST[self::QUERY_REQUEST_PARAMETER]) ? $_REQUEST[self::QUERY_REQUEST_PARAMETER] : "";
       $this->query = DataSourceHelper::parseQuery($queryString);
+      return $this;
     }
 
     protected function createDataSourceParametersFromRequest()
@@ -89,11 +90,13 @@
       {
         $this->dsParams->setOutputType(OutputType::JSONP);
       }
+      return $this;
     }
 
     protected function inferLocaleFromRequest()
     {
       $this->userLocale = DataSourceHelper::getLocaleFromRequest();
+      return $this;
     }
 
     public function getQuery()
@@ -109,6 +112,7 @@
     public function setUserLocale($userLocale)
     {
       $this->userLocale = $userLocale;
+      return $this;
     }
 
     public function getUserLocale()

@@ -40,6 +40,7 @@
         $row->addCell(new TableCell(Value::getNullValueFromValueType($this->columns[$i]->getType())));
       }
       $this->rows[] = $row;
+      return $this;
     }
 
     public function addRows($rows)
@@ -48,12 +49,13 @@
       {
         $this->addRow($row);
       }
+      return $this;
     }
 
     public function setRows($rows)
     {
       $this->rows = array();
-      $this->addRows($rows);
+      return $this->addRows($rows);
     }
 
     public function getNumberOfRows()
@@ -92,6 +94,7 @@
         $newRows[] = $row->addCell(new TableCell(Value::getNullValueFromValueType($columnDescription->getType())));
       }
       $this->rows = $newRows;
+      return $this;
     }
 
     public function addColumns($columns)
@@ -100,6 +103,7 @@
       {
         $this->addColumn($column);
       }
+      return $this;
     }
 
     public function setColumns($columns)
@@ -109,6 +113,7 @@
       $this->columns = array();
       $this->addColumns($columns);
       $this->addRows($rows);
+      return $this;
     }
 
     public function getColumnIndex($columnId)
@@ -139,6 +144,7 @@
     public function setLocaleForUserMessages($localeForUserMessages)
     {
       $this->localeForUserMessages = $localeForUserMessages;
+      return $this;
     }
 
     public function getLocaleForUserMessages()

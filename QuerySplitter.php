@@ -148,8 +148,38 @@
 
     protected static function splitSortAndPagination(Query $query)
     {
-      // TODO
-      return self::splitAll($query);
+      if (count($query->getAllScalarFunctionsColumns()) > 0)
+      {
+        $completionQuery = new Query();
+        $completionQuery->copyFrom($query);
+        return new QueryPair(new Query(), $completionQuery);
+      }
+
+      $dataSourceQuery = new Query();
+      $completionQuery = new Query();
+      if ($query->hasFilter() || $query->hasGroup() || $query->hasPivot())
+      {
+        $completionQuery->copyFrom($query);
+      } else
+      {
+        $dataSourceQuery->setSort($query->getSort());
+        if ($query->hasRowSkipping())
+        {
+          $completionQuery->copyRowSkipping($query);
+          $completionQuery->copyRowLimit($query);
+          $completionQuery->copyRowOffset($query);
+        } else
+        {
+          $dataSourceQuery->copyRowLimit($query);
+          $dataSourceQuery->copyRowOffset($query);
+        }
+
+        $completionQuery->setSelection($query->getSelection());
+        $completionQuery->setOptions($query->getOptions());
+        $completionQuery->setLabels($query->getLabels());
+        $completionQuery->setUserFormatOptions($query->getUserFormatOptions());
+      }
+      return new QueryPair($dataSourceQuery, $completionQuery);
     }
 
     protected static function splitSelect(Query $query)
@@ -168,5 +198,5 @@
       $completionQuery->copyFrom($query);
       return new QueryPair($dataSourceQuery, $completionQuery);
     }
-}
+  }
 ?>

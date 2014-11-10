@@ -31,6 +31,7 @@
         $curNode = $curNode->getChild($curValue);
         $curNode->aggregate($valuesToAggregate);
       }
+      return $this;
     }
 
     public function getNode(AggregationPath $path)
@@ -63,6 +64,7 @@
           self::getPathsToLeavesInternal($curNode, $result);
         }
       }
+      return $this;
     }
 
     final protected static function getPathToNode(AggregationNode $node)

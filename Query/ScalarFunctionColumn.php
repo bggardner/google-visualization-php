@@ -116,6 +116,7 @@
         $types[] = $column->getValueType($dataTable);
       }
       $this->scalarFunction->validateParameters($types);
+      return $this;
     }
 
     public function getValueType(DataTable $dataTable)

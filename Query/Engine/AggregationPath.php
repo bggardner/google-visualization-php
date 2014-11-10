@@ -15,6 +15,7 @@
     public function add(Value $value)
     {
       $this->values[] = $value;
+      return $this;
     }
 
     public function getValues()
@@ -25,6 +26,7 @@
     public function reverse()
     {
       $this->values = array_reverse($this->values);
+      return $this;
     }
   }
 ?>

@@ -40,11 +40,13 @@
     public function setPattern($pattern)
     {
       $this->pattern = $pattern;
+      return $this;
     }
 
     public function setLabel($label)
     {
       $this->label = $label;
+      return $this;
     }
 
     public function getCustomProperties()
