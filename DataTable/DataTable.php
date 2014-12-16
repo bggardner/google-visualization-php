@@ -2,6 +2,7 @@
   namespace Google\Visualization\DataSource\DataTable;
 
   use Google\Visualization\DataSource\Base\TypeMismatchException;
+  use Google\Visualization\DataSource\Base\Warning;
   use Google\Visualization\DataSource\DataTable\Value\Value;
 
   class DataTable
@@ -129,6 +130,11 @@
     public function getRow($rowIndex)
     {
       return $this->rows[$rowIndex];
+    }
+
+    public function addWarning(Warning $warning)
+    {
+      $this->warnings[] = $warning;
     }
 
     public function getWarnings()
