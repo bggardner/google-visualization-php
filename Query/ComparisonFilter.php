@@ -53,15 +53,15 @@
         case self::OPERATOR_GE:
           return $v1->compareTo($v2) >= 0;
         case self::OPERATOR_CONTAINS:
-          return strpos($v1->toString(), $v2->toString());
+          return strpos($v1->__toString(), $v2->__toString());
         case self::OPERATOR_STARTS_WITH:
-          return strpos($v1->toString(), $v2->toString()) === 0;
+          return strpos($v1->__toString(), $v2->__toString()) === 0;
         case self::OPERATOR_ENDS_WITH:
-          return strpos(strrev($v1->toString()), strrev($v2->toString())) === 0;
+          return strpos(strrev($v1->__toString()), strrev($v2->__toString())) === 0;
         case self::OPERATOR_MATCHES:
-          return preg_match("/" . $v2->toString() . "/", $v1->toString()) === 1;
+          return preg_match("/" . $v2->__toString() . "/", $v1->__toString()) === 1;
         case self::OPERATOR_LIKE:
-          return preg_match("/" . str_replace("_", ".", str_replace("%", ".*", $v2->toString())) . "/", $v2->toString()) === 1;
+          return preg_match("/" . str_replace("_", ".", str_replace("%", ".*", $v2->__toString())) . "/", $v2->__toString()) === 1;
       }
       return FALSE;
     }

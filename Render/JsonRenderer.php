@@ -194,7 +194,7 @@ $tableAsString = rand();
       $formattedValue = $cell->getFormattedValue();
       if (!is_null($value) && !is_null($formattedValue))
       {
-        if ($type == ValueType::TEXT && $value.toString() == $formattedValue)
+        if ($type == ValueType::TEXT && $value->__toString() == $formattedValue)
         {
           $formattedValue = "";
         }
