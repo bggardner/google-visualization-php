@@ -32,7 +32,7 @@
 
       $sb = substr($sb, 0, -1) . "\n";
 
-      $formatters = ValueFormatter::createDefaultFormatters($local);
+      $formatters = ValueFormatter::createDefaultFormatters($locale);
 
       $rows = $dataTable->getRows();
       foreach ($rows as $row)
