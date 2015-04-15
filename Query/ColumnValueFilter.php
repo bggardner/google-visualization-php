@@ -53,7 +53,7 @@
 
     public function toQueryString()
     {
-      if ($this->isComparisonOperatorReversed)
+      if ($this->isComparisonOrderReversed)
       {
         return $this->value->toQueryString() . " " . $this->operator . " " . $this->column->toQueryString();
       } else
