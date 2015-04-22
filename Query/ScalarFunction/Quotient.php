@@ -46,7 +46,7 @@
 
     public function toQueryString($argumentsQueryStrings)
     {
-      return "(" . $argumentsQueryStrings[0] . " / " . $argumentsQueryStrings . ")";
+      return "(" . $argumentsQueryStrings[0] . " / " . $argumentsQueryStrings[1] . ")";
     }
   }
 ?>
