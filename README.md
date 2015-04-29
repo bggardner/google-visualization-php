@@ -63,6 +63,7 @@ The usage is nearly similar to that of the [java library](https://developers.goo
     - `DataSourceHelper::parseQuery($string)` - Returns a `Query` object from $string
     - `Util\Pdo\MySqlPdoDataSourceHelper::executeQuery(Query $query, PDO $pdo, $tableNmae)` - Returns a `DataTable` object by applying the query to a MySQL table 
     - `DataSourceHelper::applyQuery(Query $query, DataTable $dataTable, $locale)` - Returns a `DataTable` object by applying the query to an exsiting `DataTable`
+- Optionally the resource bundle can be kept in a folder outside of the repository. In that case call `Google\Visualization\DataSource\Base\LocaleUtil::setResourceBundleDir($pathToResources);` where `ErrorMessages` is a sub-folder of `$pathToResources`.
 
 
 Examples
