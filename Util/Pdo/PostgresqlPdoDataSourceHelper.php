@@ -138,7 +138,7 @@
           || $filter->getValue()->getType() == ValueType::DATETIME
           || $filter->getValue()->getType() == ValueType::TIMEOFDAY)
         {
-          $second = "\"" . str_replace("\"", "\\\"", $second) . "\"";
+          $second = "'" . str_replace("'", "\\'", $second) . "'";
         }
       }
       return self::buildWhereClauseFromRightAndLeftParts($first, $second, $filter->getOperator());
