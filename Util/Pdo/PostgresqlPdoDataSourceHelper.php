@@ -401,6 +401,10 @@
         {
           $columnIds[] = self::getColumnId($column);
         }
+        // Avoid Division by zero errors in postgres by setting denominator to null if it's zero
+        if ($operator == '/') {
+          $columnIds[1] = '(CASE (' . $columnIds[1] . ') WHEN 0 THEN NULL ELSE (' . $columnIds[1] . ') END)';
+        }
         $columnId = "(" . implode(" " . $operator . " ", $columnIds) . ")";
       } else
       {
