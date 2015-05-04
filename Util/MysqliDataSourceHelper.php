@@ -35,10 +35,11 @@
   use Google\Visualization\DataSource\Query\SortOrder;
   use Google\Visualization\DataSource\Query\ScalarFunctionColumn;
   use Google\Visualization\DataSource\Query\ScalarFunction\TimeComponent;
+  use Google\Visualization\DataSource\Util\DataManipulatorInterface;
 
   class MysqliDataSourceHelper
   {
-    public static function executeQuery(Query $query, mysqli $db, $tableName)
+    public static function executeQuery(Query $query, mysqli $db, $tableName, DataManipulatorInterface $manipulator = NULL)
     {
       mysqli_report(MYSQLI_REPORT_STRICT);
 
@@ -55,7 +56,7 @@
         {
           throw new mysqli_sql_exception($db->error);
         }
-        return self::buildTable($stmt, $columnIdsList);
+        return self::buildTable($stmt, $columnIdsList, $manipulator);
       } catch (mysqli_sql_exception $e)
       {
         $messageToUser = "Failed to execute MySQL query. MySQL error message: " . $e->getMessage();
@@ -63,10 +64,10 @@
       }
     }
 
-    public static function buildTable(mysqli_result $result, $columnIdsList = NULL)
+    public static function buildTable(mysqli_result $result, $columnIdsList = NULL, DataManipulatorInterface $manipulator = NULL)
     {
-      $table = self::buildColumns($result, $columnIdsList);
-      $table = self::buildRows($table, $result);
+      $table = self::buildColumns($result, $columnIdsList, $manipulator);
+      $table = self::buildRows($table, $result, $manipulator);
       return $table;
     }
 
@@ -80,20 +81,23 @@
       return $columnIds;
     }
 
-    protected static function buildColumns(mysqli_result $result, $columnIdsList)
+    protected static function buildColumns(mysqli_result $result, $columnIdsList, DataManipulatorInterface $manipulator = NULL)
     {
       $dataTable = new DataTable();
       foreach ($result->fetch_fields() as $field)
       {
         $id = is_null($columnIdsList) ? $field->name : $columnIdsList[$i];
         $valueType = self::fieldToValueType($field);
+	if ($manipulator) {
+          $valueType = $manipulator->getColumnType($i, $valueType) ?: $valueType;
+	}
         $columnDescription = new ColumnDescription($id, $valueType, $field->name);
         $dataTable->addColumn($columnDescription);
       }
       return $dataTable;
     }
 
-    protected static function buildRows(DataTable $dataTable, mysqli_result $result)
+    protected static function buildRows(DataTable $dataTable, mysqli_result $result, DataManipulatorInterface $manipulator = NULL)
     {
       $columnDescriptionList = $dataTable->getColumnDescriptions();
       $numOfCols = $dataTable->getNumberOfColumns();
@@ -109,7 +113,7 @@
         $tableRow = new TableRow();
         for ($c = 0; $c < $numOfCols; $c++)
         {
-          $tableRow->addCell(self::buildTableCell($row, $columnsTypeArray[$c], $c));
+          $tableRow->addCell(self::buildTableCell($row, $columnsTypeArray[$c], $c, $manipulator));
         }
         try
         {
@@ -119,7 +123,7 @@
       return $dataTable;
     }
 
-    protected static function buildTableCell($row, $valueType, $column)
+    protected static function buildTableCell($row, $valueType, $column, DataManipulatorInterface $manipulator = NULL)
     {
       switch ($valueType)
       {
@@ -140,6 +144,9 @@
           break;
         default:
           $value = new TextValue($row[$column]);
+      }
+      if ($manipulator) {
+        $value = $manipulator->getCellValue($column, $value, $row) ?: $value;
       }
       return new TableCell($value);
     }

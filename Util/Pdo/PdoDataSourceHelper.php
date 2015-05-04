@@ -19,10 +19,11 @@
   use Google\Visualization\DataSource\DataTable\Value\ValueType;
   use Google\Visualization\DataSource\Query\Query;
   use Google\Visualization\DataSource\Query\QuerySelection;
+  use Google\Visualization\DataSource\Util\DataManipulatorInterface;
 
   abstract class PdoDataSourceHelper implements PdoDataSourceHelperInterface
   {
-    public static function executeQuery(Query $query, PDO $db, $tableName)
+    public static function executeQuery(Query $query, PDO $db, $tableName, DataManipulatorInterface $manipulator = NULL)
     {
       if (!static::validateDriver($driver = $db->getAttribute(PDO::ATTR_DRIVER_NAME)))
       {
@@ -41,7 +42,7 @@
       try
       {
         $stmt = $db->query($queryString);
-        return self::buildTable($stmt, $columnIdsList);
+        return self::buildTable($stmt, $columnIdsList, $manipulator);
       } catch (PDOException $e)
       {
         $messageToUser = "Failed to execute SQL query. SQL error message: " . $e->getMessage();
@@ -49,10 +50,10 @@
       }
     }
 
-    public static function buildTable(PDOStatement $stmt, $columnIdsList = NULL)
+    public static function buildTable(PDOStatement $stmt, $columnIdsList = NULL, DataManipulatorInterface $manipulator = NULL)
     {
-      $table = self::buildColumns($stmt, $columnIdsList);
-      $table = self::buildRows($table, $stmt);
+      $table = self::buildColumns($stmt, $columnIdsList, $manipulator);
+      $table = self::buildRows($table, $stmt, $manipulator);
       return $table;
     }
 
@@ -66,7 +67,7 @@
       return $columnIds;
     }
 
-    protected static function buildColumns(PDOStatement $stmt, $columnIdsList)
+    protected static function buildColumns(PDOStatement $stmt, $columnIdsList, DataManipulatorInterface $manipulator = NULL)
     {
       $result = new DataTable();
       for ($i = 0; $i < $stmt->columnCount(); $i++)
@@ -79,6 +80,9 @@
         } else {
           $valueType = self::pdoTypeToValueType($metaData["pdo_type"]);
         }
+	if ($manipulator) {
+          $valueType = $manipulator->getColumnType($i, $valueType) ?: $valueType;
+	}
         $columnDescription = new ColumnDescription($id, $valueType, $metaData["name"]);
         $result->addColumn($columnDescription);
       }
@@ -102,7 +106,7 @@
       return $valueType;
     }
 
-    protected static function buildRows(DataTable $dataTable, PDOStatement $stmt)
+    protected static function buildRows(DataTable $dataTable, PDOStatement $stmt, DataManipulatorInterface $manipulator = NULL)
     {
       $columnDescriptionList = $dataTable->getColumnDescriptions();
       $numOfCols = $dataTable->getNumberOfColumns();
@@ -118,7 +122,7 @@
         $tableRow = new TableRow();
         for ($c = 0; $c < $numOfCols; $c++)
         {
-          $tableRow->addCell(self::buildTableCell($row, $columnsTypeArray[$c], $c));
+          $tableRow->addCell(self::buildTableCell($row, $columnsTypeArray[$c], $c, $manipulator));
         }
         try
         {
@@ -128,7 +132,7 @@
       return $dataTable;
     }
 
-    protected static function buildTableCell($row, $valueType, $column)
+    protected static function buildTableCell($row, $valueType, $column, DataManipulatorInterface $manipulator = NULL)
     {
       switch ($valueType)
       {
@@ -149,6 +153,9 @@
           break;
         default:
           $value = new TextValue($row[$column]);
+      }
+      if ($manipulator) {
+        $value = $manipulator->getCellValue($column, $value, $row) ?: $value;
       }
       return new TableCell($value);
     }
