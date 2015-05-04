@@ -157,3 +157,56 @@ Query a CSV file (with known column order and data types), using spl_autoload_re
   new MyDataSource();
 ?>
 ```
+Query a table and Manipulate cells while loading.
+```php
+<?php
+  // Required to autoload the Google\Visualization\DataSource classes
+  require_once "/path/to/AutoloadByNamespace.php";
+  spl_autoload_register("AutoloadByNamespace::autoload");
+  AutoloadByNamespace::register("Google\Visualization\DataSource", "/path/to/google-visualization-php");
+
+  // A manipulator can be used to modify data loaded from the given datasource
+
+  class MyManipulator implements Google\Visualization\DataSource\Util\DataManipulatorInterface
+  {
+    public function getColumnType($column, $valueType)
+    {
+      switch ($column) {
+      case 1:
+        return ValueType::TEXT;
+      default:
+        return null;
+      }
+    }
+
+    public function getCellValue($column, Google\Visualization\DataSource\DataTable\Value\Value $value) {
+      switch ($column) {
+      case 1:
+        return new Google\Visualization\DataSource\DataTable\Value\TextValue('<a href="/loadObject/' . $value->getValue() . '">Link to object</a>');
+      default:
+        return null;
+      }
+    }
+  }
+
+  // The custom class that defines how the data is generated
+  class MyDataSource extends Google\Visualization\DataSource\DataSource
+  {
+    public function getCapabilities() { return Google\Visualization\DataSource\Capabilities::SQL; }
+
+    public function generateDataTable(Google\Visualization\DataSource\Query\Query $query)
+    {
+      // MySQL
+      $pdo = new PDO("mysql:host=xxx;port=xxx;dbname=xxx", "username", "password");
+      // Pass an instance of the manipulator
+      return Google\Visualization\DataSource\Util\Pdo\MysqlPdoDataSourceHelper::executeQuery($query, $pdo, "mytable", new MyManipulator);
+    }
+
+    public function isRestrictedAccessMode() { return FALSE; }
+  }
+
+  // Instantiating the class parses the 'tq' and 'tqx' HTTP request parameters and outputs the resulting data
+  new MyDataSource();
+?>
+```
+
