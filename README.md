@@ -54,7 +54,7 @@ Installation
 Usage
 -----
 
-The usage is nearly similar to that of the [java library](https://developers.google.com/chart/interactive/docs/dev/dsl_about) (see that further usage help).
+The usage is nearly similar to that of the [java library](https://developers.google.com/chart/interactive/docs/dev/dsl_about) (see that for further usage help).
 - Include all the files in the path or use an autoloader, such as [AutoloadByNamespace-php](https://github.com/bggardner/AutoloadByNamespace-php).
 - For usage with Google Charts:
     - Create a class that extends the `DataSource` class
