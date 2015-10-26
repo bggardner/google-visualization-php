@@ -569,12 +569,14 @@
 
     protected static function parseArithmeticColumn($arg, $pattern)
     {
-        $offset = 0;
-        foreach (self::splitArguments($arg, $pattern) as $colString)
+      $operators = self::getOuterOperators($arg);
+      $offset = 0;
+      foreach (self::splitArguments($arg, $pattern) as $colString)
+      {
+        $colStringLength = strlen($colString);
+        $colString = preg_replace("/^\((.+)\)$/", "$1", $colString); // Strip off outer parentheses
+        if (isset($column))
         {
-          $colString = preg_replace("/^\((.+)\)$/", "$1", $colString); // Strip off outer parentheses
-          if (isset($column))
-          {
             preg_match($pattern, $arg, $matches, PREG_OFFSET_CAPTURE, $offset);
             $operator = $matches[0][0];
             $offset = $matches[0][1] + 1;
@@ -597,11 +599,12 @@
                 break;
             }
             $column = new ScalarFunctionColumn(array($column, self::parseColumn($colString)), $sf);
-          } else
-          {
-            $column = self::parseColumn($colString);
-          }
+        } else
+        {
+          $column = self::parseColumn($colString);
         }
+        $offset += $colStringLength;
+      }
       return $column;
     }
 
@@ -645,9 +648,10 @@
           throw new InvalidQueryException("Column name is required.");
         }
         $column = new SimpleColumn($matches[1]);
-      } else if (preg_match("/^[^\(]+\s*[\+\-\*\/%]" . self::UNQUOTED_LOOKAHEAD . "/", $arg)) // Arithmetic expression not enclosed in a function
+      } else if (preg_match("/^(([^\(]+)|([^\(]*\([^\)]*\)))\s*[\+\-\*\/%]" . self::UNQUOTED_LOOKAHEAD . "/", $arg)) // Arithmetic expression not enclosed in a function
       {
         $operators = self::getOuterOperators($arg);
+        // Operator precedence
         if (preg_match("/[\*\/%]/", implode("", $operators))) // Multiply, divide, or modulo
         {
           $column = self::parseArithmeticColumn($arg, "/[\*\/%]/");
