@@ -34,6 +34,10 @@
           self::setResponseJSON($dataSourceParameters);
           self::writeResponse($responseMessage);
           break;
+        case OutputType::PHP:
+          self::setResponsePHP($dataSourceParameters);
+          self::writeResponse($responseMessage);
+          break;
         default:
           throw new RuntimeException("Unhandled output type.");
       }
@@ -70,6 +74,11 @@
     public static function setResponseJSON(DataSourceParameters $dataSourceParameters)
     {
       header("Content-Type: application/json; charset=UTF-8");
+    }
+
+    public static function setResponsePHP(DataSourceParameters $dataSourceParameters)
+    {
+      header("Content-type: text/plain; charset=UTF-8");
     }
 
     public static function writeResponse($responseMessage, $charset = "UTF-8", $byteOrderMark = NULL)

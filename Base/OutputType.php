@@ -9,6 +9,7 @@
     const HTML = "html";
     const JSON = "json";
     const JSONP = "jsonp";
+    const PHP = "php";
     const TSV_EXCEL = "tsv-excel";
 
     public static function defaultValue()

@@ -101,6 +101,9 @@
         case OutputType::JSON:
           $response = JsonRenderer::renderJsonResponse($dataSourceRequest->getDataSourceParameters(), $responseStatus, $dataTable);
           break;
+        case OutputType::PHP:
+          $response = serialize($dataTable);
+          break;
         default:
           throw new RuntimeException("Unhandled output type.");
       }
@@ -122,6 +125,9 @@
         case OutputType::JSONP:
         case OutputType::JSON:
           $response = JsonRenderer::renderJsonResponse($dsParameters, $responseStatus, NULL);
+          break;
+        case OutputType::PHP:
+          $response = serialize($responseStatus);
           break;
         default:
           throw new RuntimeException("Unhandled output type.");
