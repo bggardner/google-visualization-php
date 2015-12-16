@@ -10,7 +10,7 @@ Thorough testing has not been performed, so bug reports are encouraged.  Enjoy!
 Features
 --------
 
-- A PHP implementation of the [Google Chart Tools Datasource Protocol](https://developers.google.com/chart/interactive/docs/dev/implementing_data_source) (V0.6)
+- A PHP implementation of the [Google Chart Tools Datasource Protocol](https://developers.google.com/chart/interactivOuimplementing_data_source) (V0.6)
 - Parses a [Google Visualization Query](https://developers.google.com/chart/interactive/docs/querylanguage) into a PHP object
 - Executes the query on an existing `DataTable` or retrieves one from a database using a `Util\xxxDataSourceHelper` class, which performs automatic type casting:
     - PDO:
@@ -19,7 +19,13 @@ Features
         - MySQL
         - SQLite
     - MySQLi
-- Outputs the result in the requested format (JSON, JSONP, HTML, or CSV)
+- Outputs the result in the requested format
+    - `csv` - Comma Separated Values
+    - `html` - HyperText Markup Language
+    - `json` - JavaScript Object Notation
+    - `jsonp` - JSON with Padding
+    - `php` - Serialized PHP object with class: DataTable (success) or ResponseStatus (error)
+    - `tsv-excel` - Tab Separated Values for Excel
 - Complete support of the [Google Visualization Query Language](https://developers.google.com/chart/interactive/docs/querylanguage) (V0.7), with some additional functions:
     - `ABS(number)` - absolute value
     - `CONCAT(string1, string2, ...)` - concatenate strings
@@ -27,7 +33,6 @@ Features
     - `LEFT(string, length)` - left-most characters of a string
     - `RIGHT(string, length)` - right-most characters of a string
     - `ROUND(number, precision)` - round a number to a digit of precision
-
 
 Dependencies
 ------------
