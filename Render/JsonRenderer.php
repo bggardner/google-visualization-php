@@ -95,7 +95,9 @@ $tableAsString = rand();
       {
         return $dsParams->getResponseHandler()."(".json_encode($response, JSON_NUMERIC_CHECK).")";
       }
-      return json_encode($response, JSON_NUMERIC_CHECK);
+      $json = json_encode($response, JSON_NUMERIC_CHECK);
+      // Remove quotes from Date object
+      return preg_replace("/\"v\":\"(Date\([0-9,]+\))\"/", "\"v\":new $1", $json);
     }
 
     public static function renderDataTable(DataTable $dataTable, $includeValues, $includeFormatting, $renderDateAsDateConstructor)
