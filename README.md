@@ -10,7 +10,7 @@ Thorough testing has not been performed, so bug reports are encouraged.  Enjoy!
 Features
 --------
 
-- A PHP implementation of the [Google Chart Tools Datasource Protocol](https://developers.google.com/chart/interactivOuimplementing_data_source) (V0.6)
+- A PHP implementation of the [Google Chart Tools Datasource Protocol](https://developers.google.com/chart/interactive/docs/dev/implementing_data_source) (V0.6)
 - Parses a [Google Visualization Query](https://developers.google.com/chart/interactive/docs/querylanguage) into a PHP object
 - Executes the query on an existing `DataTable` or retrieves one from a database using a `Util\xxxDataSourceHelper` class, which performs automatic type casting:
     - PDO:
