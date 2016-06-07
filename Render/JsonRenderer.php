@@ -96,8 +96,8 @@ $tableAsString = rand();
         return $dsParams->getResponseHandler()."(".json_encode($response, JSON_NUMERIC_CHECK).")";
       }
       $json = json_encode($response, JSON_NUMERIC_CHECK);
-      // Remove quotes from Date object
-      return preg_replace("/\"v\":\"(Date\([0-9,]+\))\"/", "\"v\":new $1", $json);
+      return $json;
+      return preg_replace("/\"v\":\"(Date\([0-9,]+\))\"/", "\"v\":new $1", $json); // Remove quotes from Date object
     }
 
     public static function renderDataTable(DataTable $dataTable, $includeValues, $includeFormatting, $renderDateAsDateConstructor)
@@ -158,6 +158,7 @@ $tableAsString = rand();
             $valueJson .= $value->getMonth() . ",";
             $valueJson .= $value->getDayOfMonth();
             $valueJson .= ")";
+//            $valueJson .= $value->getDateTime()->format("c");
             break;
           case ValueType::NUMBER:
             $valueJson .= $value->getValue();
