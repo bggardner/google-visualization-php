@@ -49,7 +49,7 @@ Dependencies
 Installation
 ------------
 
-1. Clone/extract repository.
+1. Clone/extract repository or via [Composer](https://getcomposer.org/) using the `bggardner/google-visualization-php` package.
 2. Use the ICU tool `genrb` to compile each `*.txt` file in `Base\ErrorMessages`
     - This will compile `root.txt` into `root.res` (default locale resource bundle):
 
@@ -74,13 +74,10 @@ The usage is nearly similar to that of the [java library](https://developers.goo
 Examples
 --------
 
-Query a table named "mytable" from a SQL database, using `AutoloadByNamespace`:
+Query a table named "mytable" from a SQL database, using Composer's autoload:
 ```php
 <?php
-  // Required to autoload the Google\Visualization\DataSource classes
-  require_once "/path/to/AutoloadByNamespace.php";
-  spl_autoload_register("AutoloadByNamespace::autoload");
-  AutoloadByNamespace::register("Google\Visualization\DataSource", "/path/to/google-visualization-php");
+  require "vendor/autoload.php";
 
   // The custom class that defines how the data is generated
   class MyDataSource extends Google\Visualization\DataSource\DataSource
@@ -122,7 +119,7 @@ Query a CSV file (with known column order and data types), using spl_autoload_re
 <?php
   spl_autoload_register(function($class) {
     $class = str_replace('Google\\Visualization\\DataSource\\', '', $class);
-    require_once '/path/to/google-visualization-php/' . str_replace('\\', DIRECTORY_SEPARATOR, $class) . '.php';
+    require_once '/path/to/google-visualization-php/src/' . str_replace('\\', DIRECTORY_SEPARATOR, $class) . '.php';
   });
 
   class MyDataSource extends Google\Visualization\DataSource\DataSource
