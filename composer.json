@@ -1,7 +1,7 @@
 {
     "name": "bggardner/google-visualization-php",
     "description": "Google Visualization Data Source for PHP",
-    "license": "Apache License 2.0",
+    "license": "Apache-2.0",
     "require": {
         "php": "^5.3|^7.0",
         "ext-intl": "*"
