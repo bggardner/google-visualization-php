@@ -1,7 +1,7 @@
 Google Visualization Data Source for PHP
 ========================================
 
-This is a near literal translation of [google-visualization-java](https://code.google.com/p/google-visualization-java/source/browse/trunk/src/main/java/com/google/visualization/datasource/) into PHP.
+This is a near literal translation of [google-visualization-java](https://github.com/google/google-visualization-java) into PHP.
 The `QueryParser` class was not translated, but written from scratch.
 While its main purpose is to generate data formatted for Google Charts, it can also be used as an abstraction layer for accessing data from a variety of sources using a SQL-like query.
 Thorough testing has not been performed, so bug reports are encouraged.  Enjoy!
