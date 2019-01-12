@@ -42,7 +42,7 @@ Dependencies
     - PDO extension (optional, required for `Util\PdoDataSourceHelper` classes)
         - PDO database-specific driver extensions (required for each driver you need to use)
     - mysqli extension (optional, required for `Util\MysqliDataSourceHelper` class)
-- ICU (to compile resource bundles)
+- ICU (optional, to compile additional resource bundles)
     - See the [ICU ReadMe](http://source.icu-project.org/repos/icu/icu/trunk/readme.html) if `genrb` is not installed on your system
 
 
@@ -50,10 +50,10 @@ Installation
 ------------
 
 1. Clone/extract repository; or via [Composer](https://getcomposer.org/) requiring `"bggardner/google-visualization-php": "dev-master"`
-2. Use the ICU tool `genrb` to compile each `*.txt` file in `Base\ErrorMessages`
-    - This will compile `root.txt` into `root.res` (default locale resource bundle):
+2. (Optional, to add languages/locales for error messages) Use the ICU tool `genrb` to compile each `*.txt` file in `Base\ErrorMessages`
+    - This will compile `*.txt` into `*.res` (default locale resource bundle):
 
-`user@localhost [/path/to/google-visualization-php/Base/ErrorMessages]# genrb root.txt`
+`user@localhost [/path/to/google-visualization-php/src/Base/ErrorMessages]# genrb *.txt`
 
 
 Usage
