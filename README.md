@@ -49,7 +49,7 @@ Dependencies
 Installation
 ------------
 
-1. Clone/extract repository or via [Composer](https://getcomposer.org/) using the `bggardner/google-visualization-php` package.
+1. Clone/extract repository; or via [Composer](https://getcomposer.org/) requiring `"bggardner/google-visualization-php": "dev-master"`
 2. Use the ICU tool `genrb` to compile each `*.txt` file in `Base\ErrorMessages`
     - This will compile `root.txt` into `root.res` (default locale resource bundle):
 
