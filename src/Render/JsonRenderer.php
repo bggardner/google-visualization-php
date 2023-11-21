@@ -102,7 +102,7 @@ $tableAsString = rand();
 
     public static function renderDataTable(DataTable $dataTable, $includeValues, $includeFormatting, $renderDateAsDateConstructor)
     {
-      return json_encode(self::objectifyDataTable($dataTable, $includeValues, $includeFormatting, $renderDateAsDataConstructor), JSON_NUMERIC_CHECK);
+      return json_encode(self::objectifyDataTable($dataTable, $includeValues, $includeFormatting, $renderDateAsDateConstructor), JSON_NUMERIC_CHECK);
     }
 
     protected static function objectifyDataTable(DataTable $dataTable, $includeValues, $includeFormatting, $renderDateAsDateConstructor)
