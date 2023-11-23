@@ -1,83 +1,75 @@
 <?php
-  namespace Google\Visualization\DataSource\Query;
 
-  class QuerySort
-  {
+namespace Google\Visualization\DataSource\Query;
+
+class QuerySort
+{
     protected $sortColumns;
 
     public function __construct()
     {
-      $this->sortColumns = array();
+        $this->sortColumns = array();
     }
 
     public function isEmpty()
     {
-      return !count($this->sortColumns);
+        return !count($this->sortColumns);
     }
 
     public function addSort(ColumnSort $columnSort)
     {
-      $this->sortColumns[] = $columnSort;
-      return $this;
+        $this->sortColumns[] = $columnSort;
+        return $this;
     }
 
     public function getSortColumns()
     {
-      return $this->sortColumns;
+        return $this->sortColumns;
     }
 
     public function getColumns()
     {
-      $result = array();
-      foreach ($this->sortColumns as $columnSort)
-      {
-        $result[] = $columnSort->getColumn();
-      }
-      return $result;
+        $result = array();
+        foreach ($this->sortColumns as $columnSort) {
+            $result[] = $columnSort->getColumn();
+        }
+        return $result;
     }
 
     public function getAggregationColumns()
     {
-      $result = array();
-      foreach ($this->sortColumns as $columnSort)
-      {
-        $col = $columnSort->getColumn();
-        foreach ($col->getAllAggregationColumns() as $innerCol)
-        {
-          if (!in_array($innerCol, $result))
-          {
-            $result[] = $innerCol;
-          }
+        $result = array();
+        foreach ($this->sortColumns as $columnSort) {
+            $col = $columnSort->getColumn();
+            foreach ($col->getAllAggregationColumns() as $innerCol) {
+                if (!in_array($innerCol, $result)) {
+                    $result[] = $innerCol;
+                }
+            }
         }
-      }
-      return $result;
+        return $result;
     }
 
     public function getScalarFunctionColumns()
     {
-      $result = array();
-      foreach ($this->sortColumns as $columnSort)
-      {
-        $col = $columnSort->getColumn();
-        foreach ($col->getAllScalarFunctionColumns() as $innercol)
-        {
-          if (!in_array($innerCol, $result))
-          {
-            $result[] = $innerCol;
-          }
+        $result = array();
+        foreach ($this->sortColumns as $columnSort) {
+            $col = $columnSort->getColumn();
+            foreach ($col->getAllScalarFunctionColumns() as $innercol) {
+                if (!in_array($innerCol, $result)) {
+                    $result[] = $innerCol;
+                }
+            }
         }
-      }
-      return $result;
+        return $result;
     }
 
     public function toQueryString()
     {
-      $stringList = array();
-      foreach ($this->sortColumns as $colSort)
-      {
-        $stringList[] = $colSort->toQueryString();
-      }
-      return implode(", ", $stringList);
+        $stringList = array();
+        foreach ($this->sortColumns as $colSort) {
+            $stringList[] = $colSort->toQueryString();
+        }
+        return implode(', ', $stringList);
     }
-  }
-?>
+}

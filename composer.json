@@ -3,7 +3,7 @@
     "description": "Google Visualization Data Source for PHP",
     "license": "Apache-2.0",
     "require": {
-        "php": "^5.3|^7.0",
+        "php": "^7.1 || ^8.0",
         "ext-intl": "*"
     },
     "autoload": {

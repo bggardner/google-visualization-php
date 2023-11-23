@@ -1,21 +1,21 @@
 <?php
-  namespace Google\Visualization\DataSource\DataTable\Value;
 
-  use ReflectionClass;
+namespace Google\Visualization\DataSource\DataTable\Value;
 
-  class ValueType
-  {
-    const BOOLEAN = "boolean";
-    const NUMBER = "number";
-    const TEXT = "string";
-    const DATE = "date";
-    const TIMEOFDAY = "timeofday";
-    const DATETIME = "datetime";
+use ReflectionClass;
+
+class ValueType
+{
+    public const BOOLEAN = 'boolean';
+    public const NUMBER = 'number';
+    public const TEXT = 'string';
+    public const DATE = 'date';
+    public const TIMEOFDAY = 'timeofday';
+    public const DATETIME = 'datetime';
 
     public static function values()
     {
-      $refl = new ReflectionClass(__CLASS__);
-      return $refl->getConstants();
+        $refl = new ReflectionClass(__CLASS__);
+        return $refl->getConstants();
     }
-  }
-?>
+}

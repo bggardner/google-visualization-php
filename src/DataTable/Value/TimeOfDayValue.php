@@ -1,16 +1,16 @@
 <?php
-  namespace Google\Visualization\DataSource\DataTable\Value;
 
-  class TimeOfDayValue extends DateTimeValue
-  {
+namespace Google\Visualization\DataSource\DataTable\Value;
+
+class TimeOfDayValue extends DateTimeValue
+{
     public function getType()
     {
-      return ValueType::TIMEOFDAY;
+        return ValueType::TIMEOFDAY;
     }
 
     public function getHours()
     {
-      return (int) $this->dateTime->format("G");
+        return (int) $this->dateTime->format('G');
     }
-  }
-?>
+}

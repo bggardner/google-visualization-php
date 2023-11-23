@@ -1,10 +1,9 @@
 <?php
-  namespace Google\Visualization\DataSource\DataTable\Value;
 
-  use RuntimeException;
+namespace Google\Visualization\DataSource\DataTable\Value;
 
-  class NullValueException extends RuntimeException
-  {
+use RuntimeException;
 
-  }
-?>
+class NullValueException extends RuntimeException
+{
+}

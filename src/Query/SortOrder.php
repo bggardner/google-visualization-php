@@ -1,9 +1,9 @@
 <?php
-  namespace Google\Visualization\DataSource\Query;
 
-  class SortOrder
-  {
-    const ASCENDING = "asc";
-    const DESCENDING = "desc";
-  }
-?>
+namespace Google\Visualization\DataSource\Query;
+
+class SortOrder
+{
+    public const ASCENDING = 'asc';
+    public const DESCENDING = 'desc';
+}

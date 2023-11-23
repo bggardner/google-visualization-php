@@ -1,10 +1,10 @@
 <?php
-  namespace Google\Visualization\DataSource\Base;
 
-  class StatusType
-  {
-    const OK = "OK";
-    const ERROR = "Error";
-    const WARNING = "Warning";
-  }
-?>
+namespace Google\Visualization\DataSource\Base;
+
+class StatusType
+{
+    public const OK = 'OK';
+    public const ERROR = 'Error';
+    public const WARNING = 'Warning';
+}

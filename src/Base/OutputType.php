@@ -1,30 +1,28 @@
 <?php
-  namespace Google\Visualization\DataSource\Base;
 
-  use ReflectionClass;
+namespace Google\Visualization\DataSource\Base;
 
-  class OutputType
-  {
-    const CSV = "csv";
-    const HTML = "html";
-    const JSON = "json";
-    const JSONP = "jsonp";
-    const PHP = "php";
-    const TSV_EXCEL = "tsv-excel";
+use ReflectionClass;
+
+class OutputType
+{
+    public const CSV = 'csv';
+    public const HTML = 'html';
+    public const JSON = 'json';
+    public const JSONP = 'jsonp';
+    public const PHP = 'php';
+    public const TSV_EXCEL = 'tsv-excel';
 
     public static function defaultValue()
     {
-      return self::JSON;
-
+        return self::JSON;
     }
 
     public static function findByCode($code)
     {
-      $refl = new ReflectionClass(new self());
-      if (in_array($code, $refl->getConstants()))
-      {
-        return $code;
-      }
+        $refl = new ReflectionClass(new self());
+        if (in_array($code, $refl->getConstants())) {
+            return $code;
+        }
     }
-  }
-?>
+}

@@ -37,7 +37,7 @@ Features
 Dependencies
 ------------
 
-- PHP 5.3+ (tested on 5.3.29 &amp; 5.4.32)
+- PHP 7.1+
     - intl extension
     - PDO extension (optional, required for `Util\PdoDataSourceHelper` classes)
         - PDO database-specific driver extensions (required for each driver you need to use)
@@ -60,7 +60,7 @@ Usage
 -----
 
 The usage is nearly similar to that of the [java library](https://developers.google.com/chart/interactive/docs/dev/dsl_about) (see that for further usage help).
-- Include all the files in the path or use an autoloader, such as [AutoloadByNamespace-php](https://github.com/bggardner/AutoloadByNamespace-php).
+- Include all the files in the path or use an autoloader, such as Composer.
 - For usage with Google Charts:
     - Create a class that extends the `DataSource` class
     - Instantiate the class in a file that accepts the HTTP GET request from the Google Chart
@@ -77,85 +77,83 @@ Examples
 Query a table named "mytable" from a SQL database, using Composer's autoload:
 ```php
 <?php
-  require "vendor/autoload.php";
 
-  // The custom class that defines how the data is generated
-  class MyDataSource extends Google\Visualization\DataSource\DataSource
-  {
+require "vendor/autoload.php";
+
+// The custom class that defines how the data is generated
+class MyDataSource extends Google\Visualization\DataSource\DataSource
+{
     public function getCapabilities() { return Google\Visualization\DataSource\Capabilities::SQL; }
 
     public function generateDataTable(Google\Visualization\DataSource\Query\Query $query)
     {
-      // MySQL
-      $pdo = new PDO("mysql:host=xxx;port=xxx;dbname=xxx", "username", "password");
-      return Google\Visualization\DataSource\Util\Pdo\MysqlPdoDataSourceHelper::executeQuery($query, $pdo, "mytable");
+        // MySQL
+        $pdo = new PDO("mysql:host=xxx;port=xxx;dbname=xxx", "username", "password");
+        return Google\Visualization\DataSource\Util\Pdo\MysqlPdoDataSourceHelper::executeQuery($query, $pdo, "mytable");
 
-      // MS SQL Server / SQL Azure
-      $pdo = new PDO("sqlsrv:Server=xxx;Database=xxx", "username", "password");
-      return Google\Visualization\DataSource\Util\Pdo\MssqlserverPdoDataSourceHelper::executeQuery($query, $pdo, "mytable");
+        // MS SQL Server / SQL Azure
+        $pdo = new PDO("sqlsrv:Server=xxx;Database=xxx", "username", "password");
+        return Google\Visualization\DataSource\Util\Pdo\MssqlserverPdoDataSourceHelper::executeQuery($query, $pdo, "mytable");
 
-      // PostgreSQL
-      $pdo = new PDO("pgsql:host=xxx;port=xxx;dbname=xxx", "username", "password");
-      return Google\Visualization\DataSource\Util\Pdo\PostgresqlPdoDataSourceHelper::executeQuery($query, $pdo, "mytable");
+        // PostgreSQL
+        $pdo = new PDO("pgsql:host=xxx;port=xxx;dbname=xxx", "username", "password");
+        return Google\Visualization\DataSource\Util\Pdo\PostgresqlPdoDataSourceHelper::executeQuery($query, $pdo, "mytable");
 
-      // SQLite
-      $pdo = new PDO("sqlite:/path/to/xxx.db");
-      return Google\Visualization\DataSource\Util\Pdo\SqlitePdoDataSourceHelper::executeQuery($query, $pdo, "mytable");
+        // SQLite
+        $pdo = new PDO("sqlite:/path/to/xxx.db");
+        return Google\Visualization\DataSource\Util\Pdo\SqlitePdoDataSourceHelper::executeQuery($query, $pdo, "mytable");
 
-      // MySQLi
-      $db = new mysqli("host", "username", "password");
-      return Google\Visualization\DataSource\Util\MysqliDataSourceHelper::executeQuery($query, $db, "mytable");
+        // MySQLi
+        $db = new mysqli("host", "username", "password");
+        return Google\Visualization\DataSource\Util\MysqliDataSourceHelper::executeQuery($query, $db, "mytable");
     }
 
     public function isRestrictedAccessMode() { return FALSE; }
-  }
+}
 
-  // Instantiating the class parses the 'tq' and 'tqx' HTTP request parameters and outputs the resulting data
-  new MyDataSource();
-?>
+// Instantiating the class parses the 'tq' and 'tqx' HTTP request parameters and outputs the resulting data
+new MyDataSource();
 ```
 Query a CSV file (with known column order and data types), using spl_autoload_register:
 ```php
 <?php
-  spl_autoload_register(function($class) {
+
+spl_autoload_register(function($class) {
     $class = str_replace('Google\\Visualization\\DataSource\\', '', $class);
     require_once '/path/to/google-visualization-php/src/' . str_replace('\\', DIRECTORY_SEPARATOR, $class) . '.php';
-  });
+});
 
-  class MyDataSource extends Google\Visualization\DataSource\DataSource
-  {
+class MyDataSource extends Google\Visualization\DataSource\DataSource
+{
     public function getCapabilities() { return Google\Visualization\DataSource\Capabilities::NONE; }
 
     public function generateDataTable(Google\Visualization\DataSource\Query\Query $query = NULL)
     {
-      // Since Capabilities are NONE, the $query argument will be NULL as the data will be processed by DataSourceHelper
+        // Since Capabilities are NONE, the $query argument will be NULL as the data will be processed by DataSourceHelper
 
-      // Create the DataTable and configure the columns (name and data type)
-      $dataTable = new Google\Visualization\DataSource\DataTable\DataTable();
-      $columnDescriptions = array();
-      $columnDescriptions[] = new Google\Visualization\DataSource\DataTable\ColumnDescription("x", Google\Visualization\DataSource\DataTable\Value\ValueType::NUMBER, "x");
-      $columnDescriptions[] = new Google\Visualization\DataSource\DataTable\ColumnDescription("y", Google\Visualization\DataSource\DataTable\Value\ValueType::NUMBER, "y");
-      $dataTable->addColumns($columnDescriptions);
+        // Create the DataTable and configure the columns (name and data type)
+        $dataTable = new Google\Visualization\DataSource\DataTable\DataTable();
+        $columnDescriptions = array();
+        $columnDescriptions[] = new Google\Visualization\DataSource\DataTable\ColumnDescription("x", Google\Visualization\DataSource\DataTable\Value\ValueType::NUMBER, "x");
+        $columnDescriptions[] = new Google\Visualization\DataSource\DataTable\ColumnDescription("y", Google\Visualization\DataSource\DataTable\Value\ValueType::NUMBER, "y");
+        $dataTable->addColumns($columnDescriptions);
 
-      // Populate the DataTable
-      $fh = fopen('data.csv', 'r');
-      while (($data = fgetcsv($fh)) !== FALSE)
-      {
-        $tableRow = new Google\Visualization\DataSource\DataTable\TableRow();
-        foreach ($data as $datum)
-        {
-          $value = new Google\Visualization\DataSource\DataTable\Value\NumberValue($datum);
-          $tableCell = new Google\Visualization\DataSource\DataTable\TableCell($value);
-          $tableRow->addCell($tableCell);
+        // Populate the DataTable
+        $fh = fopen('data.csv', 'r');
+        while (($data = fgetcsv($fh)) !== FALSE) {
+            $tableRow = new Google\Visualization\DataSource\DataTable\TableRow();
+            foreach ($data as $datum) {
+                $value = new Google\Visualization\DataSource\DataTable\Value\NumberValue($datum);
+                $tableCell = new Google\Visualization\DataSource\DataTable\TableCell($value);
+                $tableRow->addCell($tableCell);
+            }
+            $dataTable->addRow($tableRow);
         }
-        $dataTable->addRow($tableRow);
-      }
       return $dataTable;
     }
 
     public function isRestrictedAccessMode() { return FALSE; }
-  }
+}
 
-  new MyDataSource();
-?>
+new MyDataSource();
 ```

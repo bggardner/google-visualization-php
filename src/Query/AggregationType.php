@@ -1,12 +1,12 @@
 <?php
-  namespace Google\Visualization\DataSource\Query;
 
-  class AggregationType
-  {
-    const AVG = "avg";
-    const COUNT = "count";
-    const MAX = "max";
-    const MIN = "min";
-    const SUM = "sum";
-  }
-?>
+namespace Google\Visualization\DataSource\Query;
+
+class AggregationType
+{
+    public const AVG = 'avg';
+    public const COUNT = 'count';
+    public const MAX = 'max';
+    public const MIN = 'min';
+    public const SUM = 'sum';
+}

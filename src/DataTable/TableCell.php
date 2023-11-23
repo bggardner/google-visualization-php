@@ -1,53 +1,52 @@
 <?php
-  namespace Google\Visualization\DataSource\DataTable;
 
-  use Google\Visualization\DataSource\DataTable\Value\Value;
+namespace Google\Visualization\DataSource\DataTable;
 
-  class TableCell
-  {
+use Google\Visualization\DataSource\DataTable\Value\Value;
+
+class TableCell
+{
     protected $value;
     protected $formattedValue;
     protected $customProperties;
 
-    public function __construct(Value $value, $formattedValue = NULL)
+    public function __construct(Value $value, $formattedValue = null)
     {
-      $this->value = $value;
-      $this->formattedValue = $formattedValue;
+        $this->value = $value;
+        $this->formattedValue = $formattedValue;
     }
 
     public function getValue()
     {
-      return $this->value;
+        return $this->value;
     }
 
     public function getFormattedValue()
     {
-      return $this->formattedValue;
+        return $this->formattedValue;
     }
 
     public function setFormattedValue($formattedValue)
     {
-      $this->formattedValue = $formattedValue;
-      return $this;
+        $this->formattedValue = $formattedValue;
+        return $this;
     }
 
     public function getType()
     {
-      return $this->value->getType();
+        return $this->value->getType();
     }
 
     public function isNull()
     {
-      return $this->value->isNull();
+        return $this->value->isNull();
     }
 
     public function getCustomProperties()
     {
-      if (is_null($this->customProperties))
-      {
-        return array();
-      }
-      return $this->customProperties;
+        if (is_null($this->customProperties)) {
+            return array();
+        }
+        return $this->customProperties;
     }
-  }
-?>
+}

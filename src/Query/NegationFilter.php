@@ -1,70 +1,65 @@
 <?php
-  namespace Google\Visualization\DataSource\Query;
 
-  use Google\Visualization\DataSource\DataTable\DataTable;
-  use Google\Visualization\DataSource\DataTable\TableRow;
+namespace Google\Visualization\DataSource\Query;
 
-  class NegationFilter extends QueryFilter
-  {
+use Google\Visualization\DataSource\DataTable\DataTable;
+use Google\Visualization\DataSource\DataTable\TableRow;
+
+class NegationFilter extends QueryFilter
+{
     protected $subFilter;
 
     public function __construct(QueryFilter $subFilter)
     {
-      $this->subFilter = $subFilter;
+        $this->subFilter = $subFilter;
     }
 
     public function isMatch(DataTable $table, TableRow $row)
     {
-      return !$this->subFilter->isMatch($table, $row);
+        return !$this->subFilter->isMatch($table, $row);
     }
 
     public function getAllColumnIds()
     {
-      return $this->subFilter->getAllColumnIds();
+        return $this->subFilter->getAllColumnIds();
     }
 
     public function getScalarFunctionColumns()
     {
-      return $this->subFilter->getScalarFunctionColumns();
+        return $this->subFilter->getScalarFunctionColumns();
     }
 
     public function getAggregationColumns()
     {
-      return $this->subFilter->getAggregationColumns();
+        return $this->subFilter->getAggregationColumns();
     }
 
     public function getSubFilter()
     {
-      return $this->subFilter;
+        return $this->subFilter;
     }
 
     public function toQueryString()
     {
-      return "NOT (" . $this->subFilter->toQueryString() . ")";
+        return 'NOT (' . $this->subFilter->toQueryString() . ')';
     }
 
     public function equals($o)
     {
-      if ($this == $o)
-      {
-        return TRUE;
-      }
-      if (is_null($o))
-      {
-        return FALSE;
-      }
-      if (get_class($this) != get_class($o))
-      {
-        return FALSE;
-      }
-      if (is_null($this->subFilter))
-      {
-        if (!is_null($o->subFilter))
-        {
-          return FALSE;
+        if ($this == $o) {
+            return true;
         }
-        return TRUE;
-      }
+        if (is_null($o)) {
+            return false;
+        }
+        if (get_class($this) != get_class($o)) {
+            return false;
+        }
+        if (is_null($this->subFilter)) {
+            if (!is_null($o->subFilter)) {
+                return false;
+            }
+            return true;
+        }
     }
-  }
-?>
+}
